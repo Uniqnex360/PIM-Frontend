@@ -1,0 +1,47 @@
+.button-row-user{
+    gap: 8px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    margin: 0px 0px 10px 0px;
+}
+.three-dot-button {
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 9999px;
+    transition: background-color 0.2s ease-in-out;
+    background-color: transparent;
+    border: none;
+  }
+  
+  .three-dot-button:hover {
+    background-color: #f3f4f6; /* Tailwind gray-100 */
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    /* top: 2.5rem; */
+    right: 89px;
+    width: 10rem;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+  }
+  
+  .dropdown-button {
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    transition: background-color 0.15s ease;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .dropdown-button:hover {
+    background-color: #f3f4f6; /* Tailwind gray-100 */
+  }
+  

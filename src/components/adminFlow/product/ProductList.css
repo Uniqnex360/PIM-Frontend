@@ -1,0 +1,249 @@
+.product-list-container {
+    padding: 15px;
+    max-width: 1200px;
+    margin: auto;
+  }
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .product_table_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0px 0px 0px;
+  }
+  
+  .add-product-btn-container {
+    display: flex;
+    align-items: center;
+    background-color: #923be3;
+    color: white;
+    padding: 4px 5px 4px 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .add-product-btn-container:hover {
+    background-color: #7430b6;
+  }
+  
+  .product-info {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .product-name {
+    flex-grow: 1;
+    text-align: center;
+  }
+  
+  .action-btn {
+    padding: 2px 8px;
+    margin-right: 10px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .edit-btn {
+    background-color: transparent;
+    color: #923be3;
+  }
+  
+  .edit-btn:hover {
+    color: #a52be4;
+  }
+  .import-btn {
+    position: relative;
+  }
+  .search-icon-container{
+    position: relative;
+  }
+  .search-hover-text{
+    visibility: hidden;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-top: 5px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+  .button-text {
+    visibility: hidden;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-top: 5px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  .import-btn:hover .button-text {
+    visibility: visible;
+    opacity: 1;
+  }
+  .search-icon-container:hover .search-hover-text{
+    visibility: visible;
+    opacity: 1;
+    cursor: pointer;
+  }
+  .import-btn:hover {
+    cursor: pointer;
+  }
+  /* Table Styling */
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.product-table th,
+.product-table td {
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.product-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.product-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.product-table tr:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+.product-info {
+  display: flex;
+  align-items: center;
+}
+
+.product-info .product-image {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 5px;
+  margin-right: 12px;
+}
+
+.product-name {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-name .brand_name {
+  /* font-weight: bold; */
+  color: #333;
+  font-size: 15px;
+}
+
+/* Price, SKU, and Actions */
+.product-table td {
+  color: #555;
+}
+
+.product-table td button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.product-table td button.edit-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .product-table th,
+  .product-table td {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .product-info {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .product-info .product-image {
+    margin-bottom: 8px;
+    width: 30px;
+    height: 30px;
+  }
+}
+
+.search-icon-container {
+  cursor: pointer;
+}
+
+.search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 450px; /* Adjust the width as per your needs */
+  margin-left: 10px; /* Add some spacing between the icon and the input */
+}
+
+.search-input-container input {
+  width: 300%; /* Make input take full width of the container */
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 25px; /* Rounded corners for input */
+  font-size: 14px;
+  outline: none;
+  margin:0px;
+}
+
+.search-input-container .MuiSvgIcon-root {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+}
+
+.search-input-container input:focus {
+  border-color: #007bff; /* Highlight border color when focused */
+}
+.search-icon-product{
+  /* margin:0px 0px 27px 0px !important; */
+}
+.productlistheader th{
+  font-size: 15px !important;
+  background-color: #f0f0f0;
+  font-weight: bold !important;
+}
+.filters-clear-btn{
+  margin: 0px 10px 30px 0px;
+}
+.swal2-popup.swal2-modal.swal2-show{
+top: 32px;
+}

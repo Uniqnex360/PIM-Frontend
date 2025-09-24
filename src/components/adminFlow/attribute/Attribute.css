@@ -1,0 +1,217 @@
+.attribute-page {
+    padding: 15px;
+  }
+  
+  .tab-nav {
+    display: flex;
+    justify-content: flex-start; /* Align the tabs to the right */
+    margin-bottom: 20px;
+    margin-top: 10px;
+  }
+  
+  .tab-button {
+    padding: 10px;
+    margin-left: 10px; /* Adjust margin to ensure there's space between the tabs */
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-size: 16px;
+    color: #333;
+    transition: 0.3s;
+    position: relative;
+  }
+  
+  .tab-button.active {
+    color: #0066cc; /* Blue color for active tab text */
+  }
+  
+  .tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #0066cc; /* Blue underline when tab is active */
+  }
+  
+  .add-attribute-butn {
+    padding: 4.5px;
+    background-color: #923be3; /* Blue color for the button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+    /* margin-bottom: 10px; Space between the button and the tabs */
+    float: right;
+  }
+  
+  .add-attribute-butn:hover {
+    background-color: #8502b5; /* Darker blue on hover */
+  }
+  
+  .tab-content {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  table th {
+   
+    background-color: #f4f4f4;
+    font-size: 15px !important;
+  }
+  table th, table td {
+    font-size: 14px;
+    padding: 6px;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+  
+  .category-list {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+
+  /* Custom styles for SweetAlert2 input fields */
+.swal-custom-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .swal-custom-form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .swal-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .swal-input:focus {
+    outline: none;
+    border-color: #3f51b5; /* Blue color on focus */
+  }
+  
+  .swal2-input {
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .swal2-select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+  }
+  
+  .swal2-input, .swal2-select {
+    box-sizing: border-box; /* Ensure padding is included in width */
+  }
+  
+  /* Custom cancel and confirm buttons styling */
+  .swal2-cancel {
+    background-color: #e06161;
+    color: white;
+    border-radius: 5px;
+    padding: 8px 16px;
+  }
+  
+  .swal2-confirm {
+    background-color: #a52be4;
+    color: white;
+    border-radius: 5px;
+    padding: 8px 16px;
+  }
+  .tag-btn.active {
+    background-color: #9400cc; /* Green background for active button */
+    color: white; /* White text for active button */
+  }
+  .tag-btn {
+    margin: 0px 10px 0px 0px;
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    background: #dcdcdc;
+    cursor: pointer;
+}
+.visibility-icon {
+  position: relative;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Hover effect: Icon should change when hovered */
+.visibility-icon:hover {
+  transform: scale(1.2); /* Grow the icon slightly */
+}
+
+/* Active visibility state (visible icon) when hovered */
+.visibility-icon.active:hover {
+  color: #0074cc; /* Active icon color */
+}
+
+/* Inactive visibility state (invisible icon) when hovered */
+.visibility-icon.inactive:hover {
+  color: #ff4d4d; /* Inactive icon color */
+}
+
+/* Styles for active visibility icon */
+.visibility-icon-active {
+  color: #9400cc; /* Default color for visible icon */
+}
+
+/* Styles for inactive visibility icon */
+.visibility-icon-inactive {
+  color: red; /* Default color for invisible icon */
+}
+
+/* Text indicating active/inactive state */
+.status-text {
+  position: absolute;
+  top: 24px; /* Adjust based on your design */
+  left: -8px;
+  font-size: 12px;
+  display: none;
+}
+.inactivetext{
+  top: 28px !important; /* Adjust based on your design */
+  left: -9px !important;
+}
+/* Show the status text on hover */
+.visibility-icon:hover .status-text {
+  display: block;
+}
+
+/* Active state text */
+.visibility-icon.active:hover .status-text {
+  color: #ffffff;
+  background: #000000;
+  width: 43px;
+  border-radius: 3px;
+  padding: 0px;
+}
+
+/* Inactive state text */
+.visibility-icon.inactive:hover .status-text {
+  color: #ffffff;
+    background: #000000;
+    width: 43px;
+    border-radius: 3px;
+    padding: 0px;
+}

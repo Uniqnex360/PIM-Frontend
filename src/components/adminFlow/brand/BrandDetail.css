@@ -1,0 +1,133 @@
+/* Container */
+.brand-details-container {
+    padding: 20px;
+    border-radius: 8px;
+    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+    margin: 10px 0px 0px 0px;
+  }
+  
+  .edit_brand {
+    font-size: 24px;
+    margin: 0px 0px 15px 0px;
+  }
+  /* .select-field{
+    width:  100% !important;
+  } */
+  /* Form */
+  .brand-form {
+    display: grid;
+    grid-gap: 6px;
+  }
+  
+  /* Form Sections */
+  .form-section {
+    display: flex;
+    flex-direction: column;
+    padding: '0px 10px 0px 10px';
+  }
+  
+  .form-section label {
+    font-size: 15px;
+    color: #333;
+    font-weight: bold;
+    margin: 0px 0px 5px 0px;
+  }
+  
+  .input-field,
+  .input-file-brand {
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    /* width: 84% !important; */
+    margin: 0px !important;
+  }
+  
+  .input-file-brand {
+    padding: 8px 8px 8px 8px;
+    /* width: 84%; */
+  }
+  
+  .input-field:focus,
+  .textarea-field-brand:focus {
+    outline: none;
+    border-color: #a52be4;
+  }
+  
+  
+  /* Logo Preview */
+  .logo-preview {
+    margin: 10px 0px 10px 0px;
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+  }
+  
+  /* Submit Button */
+  .submit-btn {
+    padding: 9px 2px;
+    font-size: 16px;
+    color: white;
+    background-color: #a52be4;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 10%;
+  }
+  
+  .submit-btn:hover {
+    background-color: #a52be4;
+  }
+/* Back Button Styling */
+
+    /* Add this to BrandDetail.css */
+.back-button {
+    padding: 10px 20px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    background-color: #a52be4;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+  }
+  
+  .back-button:hover {
+    background-color: #a52be4;
+  }
+  .brandsavebtn{
+    width: 84% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-end !important;
+  }
+  .brandsave{
+    width: 26% !important;
+    margin: 10px 0px 0px 0px;
+  }
+  .website-link {
+    color: #a52be4;
+    text-decoration: none;
+  }
+  
+  .website-link:hover {
+    text-decoration: underline;
+  }
+  
+ 
+  
+  .edit-button {
+    background-color: transparent;
+    color: #a52be4;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .edit-button:hover {
+    color: #8a1db7;
+  }
+  

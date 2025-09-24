@@ -1,0 +1,163 @@
+/* Sidebar */
+.sidebar {
+  width: 191px;
+  background-color: #ffffff;
+  color: #383636;
+  height: 87vh;
+  position: absolute;
+  top: 64px;
+  left: 0;
+  /* overflow-y: auto; */
+  transition: width 0.3s ease-in-out;
+  /* border: 3px solid #9653f3; */
+  border-right: 3px solid #9653f3;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.closed {
+  width: 60px;
+}
+
+/* Styling for each menu item */
+.menu {
+  list-style: none;
+  padding: 0px 0px 0px 8px;
+  margin: 0;
+  flex: 1;
+}
+
+.menu li {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  margin: 5px 15px 5px 0px;
+  border-radius: 10px;
+  position: relative; /* Important for absolute positioning of hover text */
+  transition: background-color 0.3s;
+}
+
+.menu li .icon {
+  margin-right: 10px;
+}
+
+/* Hover effect for menu items */
+.menu li:hover {
+  background-color: rgb(237 233 254);
+}
+
+/* Show the hover text only when sidebar is collapsed and hovered over */
+.sidebar.closed .menu li .hover-text {
+  display: none; /* Initially hide hover text */
+}
+
+.sidebar.closed .menu li:hover .hover-text {
+  display: block;
+  position: fixed;
+  left: 67px;
+  top: 95px;
+  font-size: 15px;
+  transform: translateY(-50%);
+  color: #ffffff;
+  background-color: #000000;
+  padding: 5px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+  z-index: 9999; 
+  opacity: 1; /* Make it visible when hovered */
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none; 
+}
+
+.sidebar.closed .menu li:hover .hover-text.vendor {
+  top: 135px;
+}
+.sidebar.closed .menu li:hover .hover-text.vendorht {
+  top: 135px;
+}
+.sidebar.closed .menu li:hover .hover-text.brandht {
+  top: 175px;
+}
+.sidebar.closed .menu li:hover .hover-text.categoryht {
+  top: 217px;
+}
+.sidebar.closed .menu li:hover .hover-text.attributeht {
+  top: 259px;
+}
+.sidebar.closed .menu li:hover .hover-text.productht {
+  top: 300px;
+}
+.sidebar.closed .menu li:hover .hover-text.damht {
+  top: 341px;
+}
+.sidebar.closed .menu li:hover .hover-text.channelht {
+  top: 382px;
+}
+/* .sidebar.closed .menu li:hover .hover-text.variantsht {
+  top: 423px;
+} */
+/* When sidebar is open, don't show hover text */
+.sidebar.open .menu li .hover-text {
+  display: none;
+}
+
+.logout-section {
+  margin-bottom: 8px;
+  padding: 10px 10px 10px 4px;
+  text-align: center;
+}
+
+.logout-button {
+  background-color: #ffffff;
+  color: #000000;
+  border: none;
+  padding: 10px;
+  border-radius: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-button:hover {
+  background-color: rgb(237 233 254);
+}
+
+.logout-button .icon {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.sidebar.open .logout-button .hover-text.logoutht {
+  display: none;
+}
+/* Show logout hover text only when sidebar is collapsed and hovered over */
+.sidebar.closed .logout-button .hover-text.logoutht {
+  display: none;
+}
+
+.sidebar.closed .logout-button:hover .hover-text.logoutht {
+  display: block;
+  position: fixed;
+  left: 67px;
+  top: 548px;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: #ffffff;
+  background-color: #000000;
+  padding: 5px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none; 
+}
+
+.sidebar.closed .menu li:hover .hover-text.logsht {
+  top: 423px;
+}
+.sidebar.closed .menu li:hover .hover-text.variantsht {
+  top: 464px;
+}

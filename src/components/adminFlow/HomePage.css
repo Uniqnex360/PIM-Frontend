@@ -1,0 +1,29 @@
+/* HomePage.css */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.main-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.right-container {
+  flex: 1;
+  padding: 10px;
+  transition: margin-left 0.3s ease-in-out;
+  overflow-y: auto;
+  background-color:rgb(255 255 255);
+  margin-top: 37px;
+}
+
+/* .right-container.expanded {
+  margin-left: 191px;
+}
+
+.right-container.collapsed {
+  margin-left: 60px;
+}  */

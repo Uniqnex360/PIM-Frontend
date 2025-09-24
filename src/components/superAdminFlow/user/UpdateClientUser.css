@@ -1,0 +1,15 @@
+.tab-button-client {
+    background-color: transparent;
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-bottom: 2px solid transparent;
+  }
+  
+  .active-tab-client {
+    border-bottom: 2px solid #007bff;
+    color: #007bff;
+  }
+  

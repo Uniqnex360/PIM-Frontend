@@ -1,0 +1,120 @@
+/* AddClientUser.css */
+
+.addclientuser-container {
+    padding: 20px;
+  }
+  
+  .addclientuser-back-button-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .addclientuser-back-button {
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 23px;
+    background-color: #f0f0f0;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .addclientuser-back-button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .addclientuser-title {
+    flex-grow: 1;
+    text-align: center;
+    margin: 0;
+  }
+  
+  .addclientuser-form {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .addclientuser-column {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  .addclientuser-group {
+    margin-bottom: 15px;
+  }
+  
+  .addclientuser-label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #333;
+  }
+  
+  .addclientuser-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .addclientuser-toggle-wrapper {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Toggle switch */
+  .addclientuser-switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+  }
+  
+  .addclientuser-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .addclientuser-slider {
+    position: absolute;
+    cursor: pointer;
+    background-color: #ccc;
+    border-radius: 34px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: 0.4s;
+  }
+  
+  .addclientuser-slider:before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.4s;
+  }
+  
+  .addclientuser-switch input:checked + .addclientuser-slider {
+    background-color: rgb(165, 43, 228);
+  }
+  
+  .addclientuser-switch input:checked + .addclientuser-slider:before {
+    transform: translateX(22px);
+  }
+  
+  .addclientuser-button-container {
+    margin-top: 30px;
+    text-align: center;
+  }
+  

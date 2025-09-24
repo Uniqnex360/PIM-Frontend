@@ -1,0 +1,161 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content-import {
+  background-color: #fff;
+    border-radius: 8px;
+    padding: 14px 20px 14px 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 87% !important;
+    overflow-y: auto;
+    margin-top: 30px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.modal-header h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0px;
+}
+
+.btn-close-down {
+  background-color: #ff4f5a;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.btn-close {
+  background-color: #ff4f5a;
+    color: white;
+    border: none;
+    padding: 3px 7px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 0px;
+    width: 6%;
+  }
+.modal-body {
+  padding-top: 2px;
+}
+
+.error-message {
+  background-color: #ffddde;
+  color: #ff4f5a;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.modal-content-box {
+  display: flex;
+  gap: 20px;
+}
+
+.table-container {
+  flex: 1;
+}
+
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 5px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.styled-table th {
+  background-color: #f1f1f1;
+}
+
+.map-to-where-cell {
+  cursor: move;
+  padding: 0;
+  text-align: center;
+}
+
+.matched {
+  background-color: #d4edda !important;
+}
+
+.unmatched {
+  background-color: #f8d7da !important;
+}
+
+.database-options {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+h3 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.draggable-item {
+  background-color: #e0e0e0;
+  padding: 5px;
+  border-radius: 5px;
+  cursor: move;
+  text-align: center;
+}
+
+.draggable-item:hover {
+  background-color: #c8c8c8;
+}
+
+.matched-row {
+  background-color: #d4edda;
+}
+
+.unmatched-row {
+  background-color: #f8d7da;
+}
+
+.btn-submit {
+  padding: 12px 24px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+  background-color: #0056b3;
+}

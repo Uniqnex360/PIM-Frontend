@@ -1,0 +1,258 @@
+.vendor-list-container {
+    padding: 15px;
+    /* margin-top: 5px; */
+  }
+  
+  .vendor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .pagination button {
+    margin: 0 5px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .pagination .active {
+    background-color: #007bff;
+    color: white;
+  }
+  .vendor-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+  }  
+  
+  .total-vendor-count {
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  .vendor-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  .vendor-table th, .vendor-table td {
+    padding: 4px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .vendor-table th {
+    font-size: 15px;
+    background-color: #f4f4f4;
+    padding: 8px !important;
+  }
+
+  .vendor-table tbody{
+    background:#ffffff;
+  }
+  .vendor-table td {
+    font-size: 14px;
+  }
+  
+  .pagination-container {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .pagination-container button {
+    margin: 0 5px;
+  }
+  
+  .view-details-btn {
+    padding: 5px 10px;
+    background-color: #923be3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .view-details-btn:hover {
+    background-color: #a52be4;
+  }
+  .add-vendor-btn { padding: 3px; background-color: #923be3; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; transition: background-color 0.3s; margin: 0px;width: 27%;}
+.add-vendor-btn:hover { background-color: #a52be4;}
+.textarea_placeholder::placeholder{
+  color: hsl(0,0%,85%);
+}
+.vendor-header-info button {
+  position: relative;
+}
+
+.vendor-header-info .button-text {
+  visibility: hidden;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-top: 5px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.vendor-header-info button:hover .button-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+.vendor-header-info button:hover {
+  cursor: pointer;
+}
+.search-input-container {
+  position: relative;
+}
+.import-modal {
+  position: relative;
+  padding: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.cancel-button {
+  position: absolute !important;
+  top: 12px;
+  right: 20px;
+  font-size: 30px !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  min-width: unset !important;
+  background: transparent;
+  border: none;
+  color: rgb(136, 136, 136) !important;
+  cursor: pointer;
+}
+
+.cancel-button:hover {
+  color: #f44336; /* Red color for hover effect */
+}
+.actionsbtn {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.actionsbtn button{
+  background-color: #a52be4 !important;
+}
+.upload-button {
+  margin-left: 10px;
+}
+
+.file-upload-section {
+  margin-top: 20px;
+}
+.file-upload-section button {
+  background-color: #a52be4 !important;
+}
+.file-format-select {
+  margin-left: 10px;
+}
+
+.selectFile_btn {
+  margin-right: 10px;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #666;
+}
+.download-icon-container {
+  position: relative;
+}
+
+/* Hover effect for the download icon container */
+.download-icon-container:hover .download-text {
+  visibility: visible; /* Make the download text visible */
+  opacity: 1;           /* Set opacity to 1 (fully visible) */
+  transition: visibility 0.3s, opacity 0.3s ease-in-out; /* Smooth transition */
+}
+
+/* Initial state for download-text */
+.download-text {
+  visibility: hidden; /* Initially hidden */
+  opacity: 0;         /* Initially transparent */
+  position: absolute;
+  width: 110px;
+  left: -43px;
+  bottom: 9px;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: visibility 0.3s, opacity 0.3s ease-in-out; /* Smooth transition */
+}
+.custom-icon-margin{
+  margin-top: 22px;
+}
+
+
+.vendor-table-container {
+  max-height: 400px; /* Set a height for the container */
+  overflow-y: auto; 
+  display: flex;
+  justify-content: center; /* Center the table horizontally */
+  
+}
+
+
+
+
+.table tbody{
+  background:#ffffff;
+}
+
+.vendor-table {
+  width: 100%; /* Make the table width responsive */
+  text-align: center; /* Align table contents to the center by default */
+  border-collapse: collapse; /* Optional: to ensure borders between cells appear clean */
+}
+
+.vendor-table th, .vendor-table td {
+  padding: 4px;
+  font-size: 14px !important;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+.vendor-table td {
+  font-size: 14px !important;
+  padding: 4px !important;
+  border: 1px solid #ddd;
+  text-align: center; /* Center-align the content within cells */
+}
+
+.vendor-table thead th {
+  font-size: 15px !important;
+  padding: 8px;
+  background-color: #f4f4f4;
+   position: sticky;
+  top: 0;
+  z-index: 1; /* Keep the header above the rows while scrolling */
+}
+
+.vendor-table .brand-logo-image {
+  width: 30px; /* Adjust image size */
+  height: auto;
+}
+
+
+

@@ -1,0 +1,230 @@
+/* General Styles */
+.brand-page {
+  padding: 15px;
+  font-family: Arial, sans-serif;
+  color: #333;
+  min-height: 100vh;
+}
+
+.brand-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+  
+  max-height: 400px; /* Set a height for the container */
+  overflow-y: auto; 
+  display: flex;
+  justify-content: center; /* Center the table horizontally */
+  
+}
+
+.brand-logo {
+  margin-bottom: 15px;
+}
+
+.brand-logo-image {
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  vertical-align: middle;
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px 0;
+  color: #333;
+}
+
+.brand-id {
+  font-size: 14px;
+  color: #666;
+}
+.swal-custom-confirm-brand{
+  width: 35% !important;
+}
+.swal-custom-cancel-brand{
+  width: 52% !important;
+}
+
+.brand-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0px 0px 0px;
+  border-radius: 8px;
+}
+.brand-header-info {
+  display: flex;
+  flex-direction: column;
+  width: 28%;
+}
+
+.brand-title {
+  font-size: 21px;
+  font-weight: bold;
+  margin: 0px 0px 10px 0px;
+}
+
+/* .brand-count-container {
+  display: flex;
+  align-items: center;
+} */
+
+.total-brands-text {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0px 0px 0px 10px;
+}
+
+.brand-count {
+  font-size: 16px;
+  font-weight: bold;
+  color: #a52be4; /* Blue color for the count */
+  margin: 0px 0px 0px 0px;
+  border-radius: 5px;
+}
+
+.add-brand-btn { padding: 3px; background-color: #923be3; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; transition: background-color 0.3s; margin: 0px; width:28%;}
+.add-brand-btn:hover { background-color: #a52be4;}
+.brand-cards-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 30px;
+}
+.brand-card { background-color: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; width: 200px;cursor: pointer;
+}
+.brand-card:hover { transform: translateY(-5px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); }
+.brand-name { font-size: 18px; font-weight: 600; color: #333; margin: 0; }
+.brand-id { font-size: 14px; color: #777; }
+#vendor-logo{ width: 40% !important; }
+.vendor_input{ width: 100%; height: 43px !important; margin: 0 auto;}
+.alphabet-filter { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; }
+.filter-letter { background-color: #f5f5f5; border: 1px solid #ddd; border-radius: 3px; padding: 5px 10px; font-size: 14px; cursor: pointer; transition: all 0.3s ease; }
+.filter-letter:hover { background-color: #e0e0e0;}
+.filter-letter.active { background-color: #923be3; color: #fff; border-color: #923be3;}
+.alphabetical-dropdown{display: inline-block;}
+.dropdown-select{display: inline-block;margin: 0px 18px 0px 10px;}
+.pagination-container { display: flex; justify-content: center; align-items: center; gap: 5px; margin: 0 auto; width: 40%; padding: 10px 0px 0px 0px; }
+.pagination-button { padding: 8px 12px; border: 1px solid #ddd; background-color: #f9f9f9; color: #333; cursor: pointer; transition: background-color 0.2s;border-radius: 17px;}
+.pagination-button.active { background-color: #923be3; color: white; font-weight: bold; border-color: #923be3;}
+.pagination-button:hover { background-color: #e9ecef; color: black;}
+.prev-button,
+.next-button { width: 16%;}
+.swal2-html-container{overflow: hidden !important;padding: 25px 25px 0px 25px !important;}
+#vendor-address::placeholder {
+  color: #c9c9c9; /* Change this color to your preferred color */
+}
+.swal2-close {color: rgb(136, 136, 136);}
+.brand-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+
+
+.vendor-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f0f0f0; /* Light gray background */
+  z-index: 1; /* Keep the header above the rows while scrolling */
+}
+.brand-table th, .brand-table td {
+  padding: 4px;
+  font-size: 14px !important;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.brand-table th{
+  font-size: 15px !important;
+  padding: 8px;
+  background-color: #f4f4f4;
+}
+.brand-table tbody{
+  background:#ffffff;
+}
+.brand-table td {
+  font-size: 14px;
+}
+.brand_name{
+  font-size: 14px;
+  cursor: pointer;
+}
+.addbrandcontainer button {
+  position: relative;
+}
+
+.button-text {
+  visibility: hidden;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-top: 5px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.addbrandcontainer button:hover .button-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+.addbrandcontainer button:hover {
+  cursor: pointer;
+}
+.file-format-select{
+  margin: 0px 0px 0px 10px;
+  border-radius: 5px;
+}
+.brand-actions-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+}
+
+.brand-count-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.search-input-container-brand{
+  position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* width: 450px; */
+    width: 357px;
+  margin: 0px 0px 33px 0px;
+}
+.search-input-container-brand input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  font-size: 14px;
+  outline: none;
+  margin: 0px;
+}
+.search-input-container-brand .MuiSvgIcon-root {
+  position: absolute;
+  right: 10px;
+}
+
+
