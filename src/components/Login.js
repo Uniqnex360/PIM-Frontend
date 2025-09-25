@@ -35,7 +35,7 @@ const Login = () => {
       const response = await axios.post(`${process.env.REACT_APP_IP}/loginUser/`, {
         user_name,
         password,
-      });
+      },{withCredentials:true });
 
       if (response.data.data.valid) {
         localStorage.setItem('user_login_id', response.data.data.user_login_id);
