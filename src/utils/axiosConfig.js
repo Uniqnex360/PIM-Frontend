@@ -10,7 +10,7 @@ axiosInstance.interceptors.request.use(
         const userLoginId = localStorage.getItem('user_login_id');
         if (userLoginId) {
             // console.log("12345678",userLoginId)
-            config.headers['user-login-id'] = userLoginId;
+            config.headers['User-Login-Id'] = userLoginId;
         }
         return config;
     },

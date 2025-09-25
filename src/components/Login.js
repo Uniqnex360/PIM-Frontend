@@ -5,6 +5,7 @@ import './Login.css';
 import Swal from 'sweetalert2';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import axiosInstance from '../utils/axiosConfig';
 const Login = () => {
   const [user_name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -32,7 +33,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_IP}/loginUser/`, {
+      const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/loginUser/`, {
         user_name,
         password,
       },{withCredentials:true });
