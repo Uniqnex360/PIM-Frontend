@@ -36,7 +36,7 @@ const Login = () => {
         user_name,
         password,
       },{withCredentials:true });
-
+      console.log('response',response)
       if (response.data.data.valid) {
         localStorage.setItem('user_login_id', response.data.data.user_login_id);
         localStorage.setItem('user_role', response.data.data.user_role);
