@@ -212,46 +212,66 @@ const VendorDetail = ({ isSidebarOpen, toggleSidebar }) => {
   
   // Convert file to base64 when it is selected
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    setLoadingforLogo(true);
-    if (file) {
-      // Create a FormData object to send the file as part of a POST request
-      const formDataToSend = new FormData();
-      formDataToSend.append('logo', file);  // Append file to FormData
-      formDataToSend.append('brand_id', vendorId);  // Append file to FormData
+  const file = e.target.files[0];
+  setLoadingforLogo(true);
+  if (file) {
+    // Create a FormData object to send the file as part of a POST request
+    const formDataToSend = new FormData();
+    formDataToSend.append('logo', file);  // Append file to FormData
+    formDataToSend.append('brand_id', vendorId);  // Append file to FormData
 
-      try {
-        // Make the API request to upload the logo
-        const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/brandUpdateLogo/`, formDataToSend, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+    try {
+      // Make the API request to upload the logo
+      const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/brandUpdateLogo/`, formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-        // Assuming the response contains the updated logo URL or base64 string
-        
-        const updatedLogo = response.data.data.logo;  // Modify this based on the actual response structure
-        if ( response.data.data.is_updated === true) {
-          setUnsavedChanges(true);
-        // Update the formData with the new logo (this can be base64 string or URL from API)
-        setFormData({
-          ...formData,
+      console.log('Logo Upload Response:', response.data); // Debug log
+
+
+ const updatedLogo = response.data.logo || response.data.data?.logo;  // Try both paths
+      const isUpdated = response.data.is_updated || response.data.data?.is_updated;
+      
+      if (isUpdated === true && updatedLogo) {
+        setUnsavedChanges(true);
+        // Update the formData with the new logo
+        setFormData(prevFormData => ({
+          ...prevFormData,
           logo: updatedLogo,  // The updated logo from API response
-        });
+        }));
         setLoadingforLogo(false);
-        }
-        
-        // Optionally, you can display a success message here
-      } catch (error) {
         Swal.fire({
-          title: 'Error!',
-          text: 'Error uploading logo.',
-          icon: 'error',
+          title: 'Success!',
+          text: 'Logo updated successfully.',
+          icon: 'success',
+          confirmButtonText: 'OK',
+        });
+      } else {
+        setLoadingforLogo(false);
+        Swal.fire({
+          title: 'Warning!',
+          text: 'Logo upload completed but may not have been updated.',
+          icon: 'warning',
           confirmButtonText: 'OK',
         });
       }
+      
+    } catch (error) {
+      setLoadingforLogo(false);
+      console.error('Error uploading logo:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error uploading logo.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
     }
-  };
+  } else {
+    setLoadingforLogo(false);
+  }
+};
 
   // Update formData when text fields change
   const handleChange = (e, index = null, field = null) => {
@@ -345,71 +365,94 @@ const VendorDetail = ({ isSidebarOpen, toggleSidebar }) => {
     }
   }, [formData.departments.length]);
   // Submit form data as JSON (including base64 logo) with vendorId as a new field
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (unsavedChanges === false) {
-      Swal.fire({ title: 'Info!', text: 'No changes were made to save.', icon: 'info', confirmButtonText: 'OK',});
-        return;
-  }
-    try {
-      const dataToSend = {
-        ...formData,
-        id: vendorId, // Send the vendorId as a separate field
-      };        
-      if(formData.country_code === undefined || formData.country_code === '') {
-        dataToSend.country_code = ''; // Default to +1 if no country code is selected
-      }    
-      if (dataToSend.contact_info_email) {        
-        const emailValue = dataToSend.contact_info_email;
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;    
-        if (emailValue && !emailRegex.test(emailValue)) {
-          // Email is not valid, show popup message
-          Swal.fire({ title: 'Info!', text: 'Kindly enter a proper email format.', icon: 'info', confirmButtonText: 'OK',});
-          return; // Don't update the form data until the email is correct
-        }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (unsavedChanges === false) {
+    Swal.fire({ title: 'Info!', text: 'No changes were made to save.', icon: 'info', confirmButtonText: 'OK',});
+      return;
+}
+  try {
+    const dataToSend = {
+      ...formData,
+      id: vendorId, // Send the vendorId as a separate field
+    };        
+    if(formData.country_code === undefined || formData.country_code === '') {
+      dataToSend.country_code = ''; // Default to +1 if no country code is selected
+    }    
+    if (dataToSend.contact_info_email) {        
+      const emailValue = dataToSend.contact_info_email;
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;    
+      if (emailValue && !emailRegex.test(emailValue)) {
+        // Email is not valid, show popup message
+        Swal.fire({ title: 'Info!', text: 'Kindly enter a proper email format.', icon: 'info', confirmButtonText: 'OK',});
+        return; // Don't update the form data until the email is correct
       }
-      if (dataToSend.departments && dataToSend.departments.length > 0) {
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;  // Use regex to validate emails
-        for (let department of dataToSend.departments) {
-          const departmentEmail = department.email;
-          if (departmentEmail && !emailRegex.test(departmentEmail)) {
-            // Invalid department email, show popup message
-            Swal.fire({ 
-              title: 'Info!', 
-              text: `Kindly enter a proper email format for the department ${department.department_name}.`, 
-              icon: 'info', 
-              confirmButtonText: 'OK' 
-            });
-            return; // Don't proceed with invalid department emails
-          }
-        }
-      }      
-      let update_obj = { update_obj: dataToSend };
-      // Send data as JSON
-      const response = await axiosInstance.post(
-        `${process.env.REACT_APP_IP}/vendorUpdate/`,
-        update_obj, // JSON payload
-        {
-          headers: {
-            'Content-Type': 'application/json', // Ensuring the data is sent as JSON
-          },
-        }
-      );
-        console.log(response.data.data.is_updated);
-        
-      if (response.data.data.is_updated === true) {
-        setUnsavedChanges(false);
-        Swal.fire({ title: 'Success!', text: 'Vendor updated successfully.', icon: 'success', confirmButtonText: 'OK',
-          }).then(() => { navigate('/Admin/vendors'); });  // Redirect to vendor list after successful update
-      }
-      else {
-        Swal.fire({ title: 'Error!', text: 'Vendor update failed.', icon: 'error', confirmButtonText: 'OK',
-          });
-        }
-    } catch (error) {
-      console.error('Error updating vendor:', error);
     }
-  };
+    if (dataToSend.departments && dataToSend.departments.length > 0) {
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;  // Use regex to validate emails
+      for (let department of dataToSend.departments) {
+        const departmentEmail = department.email;
+        if (departmentEmail && !emailRegex.test(departmentEmail)) {
+          // Invalid department email, show popup message
+          Swal.fire({ 
+            title: 'Info!', 
+            text: `Kindly enter a proper email format for the department ${department.department_name}.`, 
+            icon: 'info', 
+            confirmButtonText: 'OK' 
+          });
+          return; // Don't proceed with invalid department emails
+        }
+      }
+    }  
+     let update_obj = { update_obj: dataToSend };
+    // Send data as JSON
+    const response = await axiosInstance.post(
+      `${process.env.REACT_APP_IP}/vendorUpdate/`,
+      update_obj, // JSON payload
+      {
+        headers: {
+          'Content-Type': 'application/json', // Ensuring the data is sent as JSON
+        },
+      }
+    );
+            console.log('API Response:', response.data); 
+        
+        // Fix: Change from response.data.data.is_updated to response.data.is_updated
+    if (response.data && response.data.is_updated === true) {
+      setUnsavedChanges(false);
+      Swal.fire({ 
+        title: 'Success!', 
+        text: 'Vendor updated successfully.', 
+        icon: 'success', 
+        confirmButtonText: 'OK',
+      }).then(() => { 
+        navigate('/Admin/vendors'); 
+      });  // Redirect to vendor list after successful update
+    } else if (response.data && response.data.is_updated === false) {
+      Swal.fire({ 
+        title: 'Warning!', 
+        text: 'Vendor update failed - no changes detected.', 
+        icon: 'warning', 
+        confirmButtonText: 'OK',
+      });
+    } else {
+      Swal.fire({ 
+        title: 'Error!', 
+        text: 'Vendor update failed.', 
+        icon: 'error', 
+        confirmButtonText: 'OK',
+      });
+    }
+  } catch (error) {
+    console.error('Error updating vendor:', error);
+    Swal.fire({ 
+      title: 'Error!', 
+      text: 'An error occurred while updating the vendor. Please try again.', 
+      icon: 'error', 
+      confirmButtonText: 'OK',
+    });
+  }
+};
   const handleBackToVendorList = () => {
     navigate('/Admin/vendors');  // Adjust the path to match your brand list route
   };
