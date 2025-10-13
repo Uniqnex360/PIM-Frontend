@@ -55,8 +55,8 @@ const VendorList = ({ isSidebarOpen, toggleSidebar }) => {
       if (response.status === 401) {
         setUnauthorized(true);
       } 
-      setVendors(response.data.data.vendor_list || []);
-      setVendorCount(response.data.data.vendor_count || 0);
+setVendors(response.data.vendor_list || []);
+setVendorCount(response.data.vendor_count || 0);
       setLoader(false);
     } catch (error) {
       setLoader(false);

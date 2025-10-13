@@ -39,27 +39,29 @@ const BrandDetail = ({ isSidebarOpen, toggleSidebar }) => {
   });
   const [isEditingWebsite, setIsEditingWebsite] = useState(false); // State to toggle between view and edit mode for website
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    setLoadingforLogo(true);
-    if (file) {
-      // Create a FormData object to send the file as part of a POST request
-      const formDataToSend = new FormData();
-      formDataToSend.append('logo', file);  // Append file to FormData
-      formDataToSend.append('brand_id', brandId);  // Append file to FormData
 
-      try {
-        // Make the API request to upload the logo
-        const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/brandUpdateLogo/`, formDataToSend, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+const handleFileChange = async (e) => {
+  const file = e.target.files[0];
+  setLoadingforLogo(true);
+  if (file) {
+    const formDataToSend = new FormData();
+    formDataToSend.append('logo', file);
+    formDataToSend.append('brand_id', brandId);
+
+    try {
+      const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/brandUpdateLogo/`, formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+       console.log('Logo upload response:', response.data); // Debug log
+      
 
         // Assuming the response contains the updated logo URL or base64 string
-        
-        const updatedLogo = response.data.data.logo;  // Modify this based on the actual response structure
-        if ( response.data.data.is_updated === true) {
+      // Fix: Check the actual response structure - it might be response.data.logo directly
+      const updatedLogo = response.data.logo || response.data.data?.logo;
+   const isUpdated = response.data?.data?.is_updated || response.data?.is_updated;
+        if (isUpdated === true) {
           setUnsavedChanges(true);
         // Update the formData with the new logo (this can be base64 string or URL from API)
         setFormData({
@@ -148,59 +150,70 @@ const BrandDetail = ({ isSidebarOpen, toggleSidebar }) => {
     fetchBrandData();
   }, [brandId]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (unsavedChanges === false) {
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (unsavedChanges === false) {
+    Swal.fire({
+      title: 'Info!',
+      text: 'No changes were made to save.',
+      icon: 'info',
+      confirmButtonText: 'OK',
+    });
+    return;
+  }
+  try {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const dataToSend = {
+      ...formData,
+      id: brandId,
+    };
+    let update_obj = { update_obj: dataToSend };
+    const response = await axiosInstance.post(
+      `${process.env.REACT_APP_IP}/brandUpdate/`,
+      update_obj,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log('Brand update response:', response.data);
+    
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+
+    // Fix: Access is_updated directly from response.data, not response.data.data
+    if (response.data.is_updated === true) {
       Swal.fire({
-        title: 'Info!',
-        text: 'No changes were made to save.',
-        icon: 'info',
+        title: 'Success!',
+        text: 'Brand updated successfully.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+      }).then(() => { navigate('/Admin/brands'); });
+      setUnsavedChanges(false);
+      fetchBrandData();
+    } else {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Brand update failed.',
+        icon: 'error',
         confirmButtonText: 'OK',
       });
-      return;
     }
-    try {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      const dataToSend = {
-        ...formData,
-        id: brandId,
-      };
-      let update_obj = { update_obj: dataToSend };
-      const response = await axiosInstance.post(
-        `${process.env.REACT_APP_IP}/brandUpdate/`,
-        update_obj,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll smoothly to the top
-      }, 100);
-      if (response.data.data.is_updated === true) {
-        Swal.fire({
-          title: 'Success!',
-          text: 'Brand updated successfully.',
-          icon: 'success',
-          confirmButtonText: 'OK',
-        }).then(() => { navigate('/Admin/brands'); });
-        setUnsavedChanges(false);
-        fetchBrandData();
-      } else {
-        Swal.fire({
-          title: 'Error!',
-          text: 'Brand update failed.',
-          icon: 'error',
-          confirmButtonText: 'OK',
-        });
-      }
-    } catch (error) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      console.error('Error updating brand:', error);
-    }
-  };
-
+  } catch (error) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    console.error('Error updating brand:', error);
+    
+    // Add proper error handling with user feedback
+    Swal.fire({
+      title: 'Error!',
+      text: 'An error occurred while updating the brand. Please try again.',
+      icon: 'error',
+      confirmButtonText: 'OK',
+    });
+  }
+};
   const handleBackToBrandList = () => {
     navigate('/Admin/brands');
   };

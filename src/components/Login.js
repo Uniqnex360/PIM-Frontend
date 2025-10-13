@@ -25,13 +25,13 @@ const Login = () => {
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
-
+ 
   // Handle login form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+ 
     try {
       const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/loginUser/`, {
         user_name,
@@ -56,24 +56,24 @@ const Login = () => {
       setLoading(false);
     }
   };
-
+ 
   // Handle forgot password submit
   const handleForgotPasswordSubmit = async (e) => {
     e.preventDefault();
     setOtpError('');
-
+ 
     if (newPassword !== confirmPassword) {
       setOtpError('Passwords do not match');
       return;
     }
-
+ 
     try {
       const response = await axios.post(`${process.env.REACT_APP_IP}/resetPassword/`, {
         otp,
         email,
         newPassword,
       });
-
+ 
       if (response.data.success) {
         Swal.fire({
           title: 'Success!',
@@ -95,19 +95,19 @@ const Login = () => {
       console.error(err);
     }
   };
-
+ 
   // Handle email submission to send Verification Code
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     setEmailError('');
     setLoadingEmail(true);
-
+ 
     if (!email) {
       setEmailError('Please enter a valid email');
       setLoadingEmail(false);
       return;
     }
-
+ 
     try {
       const response = await axios.post(`${process.env.REACT_APP_IP}/sendOtp/`, { email });
       if (response.data.status) {
@@ -122,14 +122,14 @@ const Login = () => {
       setLoadingEmail(false);
     }
   };
-
+ 
   return (
     <div className="login-page">
       <div className="login-container">
-          {/* <img 
-            src="https://kmdigicommerce.com/wp-content/uploads/2024/08/KM-2048x1976.png" 
-            alt="KM Digi Commerce" 
-            className="logo" 
+          {/* <img
+            src="https://kmdigicommerce.com/wp-content/uploads/2024/08/KM-2048x1976.png"
+            alt="KM Digi Commerce"
+            className="logo"
           /> */}
         <h2 className="login-h2">Login</h2>
         <form onSubmit={handleSubmit}>
@@ -169,12 +169,12 @@ const Login = () => {
           </button>
           {error && <p className="error-message">{error}</p>}
         </form>
-
+ 
         <p className="forgot-password" onClick={() => setShowForgotPassword(true)}>
           Forgot Password?
         </p>
       </div>
-
+ 
       {/* Forgot Password Modal */}
       {showForgotPassword && (
         <div className="forgot-password-modal">
@@ -188,7 +188,7 @@ const Login = () => {
             >
               &times;
             </button>
-
+ 
             {!otpSent ? (
               <>
                 <h3>Enter Your Email</h3>
@@ -260,5 +260,5 @@ const Login = () => {
     </div>
   );
 };
-
+ 
 export default Login;

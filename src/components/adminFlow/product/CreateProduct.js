@@ -168,14 +168,16 @@ const CreateProduct = ({ isSidebarOpen, toggleSidebar }) => {
     const addVariant = () => {
         setVariants([...variants, { name: '', value: '' }]);
     };
-    const fetchCategories = async () => {
-        try {
-            const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/obtainCategory/`, { level: 0 });
-            setCategories(response.data.data.category_levels);
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-        }
-    };
+const fetchCategories = async () => {
+    try {
+        const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/obtainCategory/`, { level: 0 });
+        console.log('Categories API Response:', response.data); // Debug log
+        setCategories(response.data.category_levels || []); // Remove the extra .data layer
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+    }
+};
+
        useEffect(() => {
             fetchCategories();
         }, []);
@@ -266,37 +268,42 @@ const CreateProduct = ({ isSidebarOpen, toggleSidebar }) => {
             fetchParentCategories(query);
         }
     };
-    const fetchParentCategories = async (inputValue) => {
-        if (!inputValue) return [];
-        try {
-            const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainCategoryList/?search=${inputValue}`);
-            const options = response.data.data.map(category => ({
-                id: category.id,
-                name: category.name,
-                level_str: category.level_str
-            }));
-            setSuggestions(options);
-        } catch (error) {
-            console.error('Error fetching parent categories:', error);
-            setSuggestions([]);
-        }
-    };
-    const handleSuggestionSelect = async (suggestion) => {
-        setParentCategoryId(suggestion.id);
+ const fetchParentCategories = async (inputValue) => {
+    if (!inputValue) return [];
+    try {
+        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainCategoryList/?search=${inputValue}`);
+        console.log('Parent Categories API Response:', response.data); // Debug log
+        const options = response.data.map(category => ({ // Remove the extra .data layer
+            id: category.id,
+            name: category.name,
+            level_str: category.level_str
+        }));
+        setSuggestions(options);
+    } catch (error) {
+        console.error('Error fetching parent categories:', error);
         setSuggestions([]);
-        setSearchQuery(suggestion.name);
-        try {
-            const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/findDuplicateCategory/?search=${newCategoryName}&category_config_id=${suggestion.id}`);
-            if (response.data.data.error === true) {
-                setCategoryError('Category name must be unique within the same parent.');
-            }
-            else {
-                setCategoryError('');  // Clear error if no duplicate is found
-            }
-        } catch (error) {
-            console.error('Error checking for duplicate category with selected suggestion:', error);
+    }
+};
+
+
+  const handleSuggestionSelect = async (suggestion) => {
+    setParentCategoryId(suggestion.id);
+    setSuggestions([]);
+    setSearchQuery(suggestion.name);
+    try {
+        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/findDuplicateCategory/?search=${newCategoryName}&category_config_id=${suggestion.id}`);
+        console.log('Duplicate check API Response:', response.data); // Debug log
+        if (response.data.error === true) { // Remove the extra .data layer
+            setCategoryError('Category name must be unique within the same parent.');
         }
-    };
+        else {
+            setCategoryError('');  // Clear error if no duplicate is found
+        }
+    } catch (error) {
+        console.error('Error checking for duplicate category with selected suggestion:', error);
+    }
+};
+
     // const checkDuplicateCategory = async () => {
     //     if (newCategoryName.trim()) {
     //         try {
@@ -313,21 +320,22 @@ const CreateProduct = ({ isSidebarOpen, toggleSidebar }) => {
     //         setCategoryError('');
     //     }
     // };
-    const checkDuplicateCategory = async (categoryName) => {
-        if (!categoryName) return; 
-        try {
-          const response = await axiosInstance.get(
-            `${process.env.REACT_APP_IP}/findDuplicateCategory/?search=${encodeURIComponent(categoryName)}`
-          );
-          if (response.data.data.error) {
-            setCategoryError("Category name must be unique within the same parent.");
-          } else {
-            setCategoryError("");
-          }
-        } catch (error) {
-          console.error("Error checking for duplicate category:", error);
-        }
-      };
+const checkDuplicateCategory = async (categoryName) => {
+    if (!categoryName) return; 
+    try {
+      const response = await axiosInstance.get(
+        `${process.env.REACT_APP_IP}/findDuplicateCategory/?search=${encodeURIComponent(categoryName)}`
+      );
+      console.log('Duplicate category API Response:', response.data); // Debug log
+      if (response.data.error) { // Remove the extra .data layer
+        setCategoryError("Category name must be unique within the same parent.");
+      } else {
+        setCategoryError("");
+      }
+    } catch (error) {
+      console.error("Error checking for duplicate category:", error);
+    }
+};
     const handleCategoryNameBlur = async() => {
         await checkDuplicateCategory();
     };
@@ -354,52 +362,84 @@ const CreateProduct = ({ isSidebarOpen, toggleSidebar }) => {
     );
     
     
-    useEffect(() => {
-        const fetchDropdownData = async () => {
-            try {
-               const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainVendor/?search=`);
-                setVendors(response.data.data.vendor_list || []);
-            } catch (error) {
-                console.error('Error fetching Vendors :', error);
-                Swal.fire({ title: 'Error!', text: 'Failed to load brands.', icon: 'error', confirmButtonText: 'OK', });
-                return; // Exit if the business types cannot be fetched
-            }
-            try {
-                const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainBrand/?search=`);
-                setBrands(response.data.data.brand_list || []);
-            } catch (error) {
-                console.error('Error fetching brands:', error);
-                Swal.fire({ title: 'Error!', text: 'Failed to load brands.', icon: 'error', confirmButtonText: 'OK', });
-                return; // Exit if the business types cannot be fetched
-            }
-            try {
-                const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainManufacture/`);
-                setManufacturers(response.data.data.manufacture_list || []);
-             } catch (error) {
-                 console.error('Error fetching Manufactures :', error);
-                 Swal.fire({ title: 'Error!', text: 'Failed to load Manufactures.', icon: 'error', confirmButtonText: 'OK', });
-                 return; // Exit if the business types cannot be fetched
-             }
-        };
-        fetchDropdownData();
-    }, []);
-      useEffect(() => {
-        const fetchCountries = async () => {            
-          try {
-            const response = await fetch('https://restcountries.com/v3.1/all');
-            const data = await response.json();
-            const countryList = data.map((country) => ({
-              code: country.cca2, // Using 'cca2' as the country code
-              name: country.name.common // Using 'common' name
-            }));            
-            setCountries(countryList);
-          } catch (error) {
-            console.error('Error fetching countries:', error);
-          }
-        };
-    
-        fetchCountries();
-      }, []); 
+useEffect(() => {
+    const fetchDropdownData = async () => {
+        try {
+           const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainVendor/?search=`);
+           console.log('Vendors API Response:', response.data); // Debug log
+            setVendors(response.data.vendor_list || []); // Remove the extra .data layer
+        } catch (error) {
+            console.error('Error fetching Vendors :', error);
+            Swal.fire({ title: 'Error!', text: 'Failed to load vendors.', icon: 'error', confirmButtonText: 'OK', });
+            return;
+        }
+        try {
+            const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainBrand/?search=`);
+            console.log('Brands API Response:', response.data); // Debug log
+            setBrands(response.data.brand_list || []); // Remove the extra .data layer
+        } catch (error) {
+            console.error('Error fetching brands:', error);
+            Swal.fire({ title: 'Error!', text: 'Failed to load brands.', icon: 'error', confirmButtonText: 'OK', });
+            return;
+        }
+        try {
+            const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainManufacture/`);
+            console.log('Manufacturers API Response:', response.data); // Debug log
+            setManufacturers(response.data.manufacture_list || []); // Remove the extra .data layer
+         } catch (error) {
+             console.error('Error fetching Manufactures :', error);
+             Swal.fire({ title: 'Error!', text: 'Failed to load Manufactures.', icon: 'error', confirmButtonText: 'OK', });
+             return;
+         }
+    };
+    fetchDropdownData();
+}, []);
+useEffect(() => {
+    const fetchCountries = async () => {            
+      try {
+        const response = await fetch('https://restcountries.com/v3.1/all');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Add validation to ensure data is an array
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid data format received from countries API');
+        }
+        
+        const countryList = data.map((country) => ({
+          code: country.cca2, // Using 'cca2' as the country code
+          name: country.name.common // Using 'common' name
+        }));            
+        setCountries(countryList);
+      } catch (error) {
+        console.error('Error fetching countries:', error);
+        
+        // Fallback to a basic country list if API fails
+        const fallbackCountries = [
+        //   { code: 'US', name: 'United States' },
+        //   { code: 'CA', name: 'Canada' },
+        //   { code: 'GB', name: 'United Kingdom' },
+        //   { code: 'IN', name: 'India' },
+        //   { code: 'AU', name: 'Australia' },
+        //   { code: 'DE', name: 'Germany' },
+        //   { code: 'FR', name: 'France' },
+        //   { code: 'JP', name: 'Japan' },
+        //   { code: 'CN', name: 'China' },
+        //   { code: 'BR', name: 'Brazil' },
+        ];
+        setCountries(fallbackCountries);
+      }
+    };
+
+    fetchCountries();
+  }, []); 
+
+
+      
       const clearProductData = () => {
         setProductid('');
         setProductName('');
@@ -458,114 +498,125 @@ const CreateProduct = ({ isSidebarOpen, toggleSidebar }) => {
             }
         });
     };
-      const handleSubmit = async (event) => {
-        setLoading(true);
-        event.preventDefault();
-        if (!productName || !sku || !brand || Object.keys(selectedCategories).length === 0) {     
-            setLoading(false);       
-            Swal.fire({
-            title: 'Error!',
-            text: 'Product name, SKU, Brand and category selection cannot be empty.',
-            icon: 'error',
-            confirmButtonText: 'OK'
-        })
-        return; // Prevent form submission if validation fails
-    }    
+const handleSubmit = async (event) => {
+    setLoading(true);
+    event.preventDefault();
+    if (!productName || !sku || !brand || Object.keys(selectedCategories).length === 0) {     
+        setLoading(false);       
+        Swal.fire({
+        title: 'Error!',
+        text: 'Product name, SKU, Brand and category selection cannot be empty.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+    })
+    return; // Prevent form submission if validation fails
+}       
     const productData = new FormData();
      console.log(formData,'formData');
      
     // Append all the form data fields to FormData
-    productData.append('product_id', productid);
-    productData.append('mpn', mpn);
-    productData.append('sku', sku);
-    productData.append('upc', upc);
-    productData.append('ean', ean);
-    productData.append('gtin', gtin);
-    productData.append('unspc', unspc);
-    productData.append('model', model);
-    productData.append('config_id', selectedCategoriesids);
-    productData.append('category_config_name', selectedCategoryName);
-    productData.append('breadcrumb', '');
-    productData.append('name', productName);
-    productData.append('short_description', shortDescription);
-    productData.append('personalized_short_description', personalizedShortDescription);
-    productData.append('long_description', longDescription);
-    productData.append('personalized_long_description', personalizedLongDescription);
-    productData.append('feature_list', features);
-    productData.append('attribute_list', JSON.stringify(attributeList));
-    productData.append('related_products', []);  // This can be handled differently if needed
-    productData.append('application', application);
-    productData.append('certifications', certifications);
-    productData.append('Compliance', compliance);
-    productData.append('Prop65', prop65);
-    productData.append('esg', esg);
-    productData.append('Hazardous', hazardous);
-    productData.append('service_warranty', serviceWarranty);
-    productData.append('product_warranty', productWarranty);
-    productData.append('country_of_origin', selectedCountry);
-    productData.append('currency', currency);
-    productData.append('msrp', msrp);
-    productData.append('selling_price', sellingPrice);
-    productData.append('discount_price', discountPrice);
+   productData.append('product_id', productid);
+productData.append('mpn', mpn);
+productData.append('sku', sku);
+productData.append('upc', upc);
+productData.append('ean', ean);
+productData.append('gtin', gtin);
+productData.append('unspc', unspc);
+productData.append('model', model);
+productData.append('config_id', selectedCategoriesids);
+productData.append('category_config_name', selectedCategoryName);
+productData.append('breadcrumb', '');
+productData.append('name', productName);
+productData.append('short_description', shortDescription);
+productData.append('personalized_short_description', personalizedShortDescription);
+productData.append('long_description', longDescription);
+productData.append('personalized_long_description', personalizedLongDescription);
+productData.append('feature_list', features);
+productData.append('attribute_list', JSON.stringify(attributeList));
+productData.append('related_products', []);  // This can be handled differently if needed
+productData.append('application', application);
+productData.append('certifications', certifications);
+productData.append('Compliance', compliance);
+productData.append('Prop65', prop65);
+productData.append('esg', esg);
+productData.append('Hazardous', hazardous);
+productData.append('service_warranty', serviceWarranty);
+productData.append('product_warranty', productWarranty);
+productData.append('country_of_origin', selectedCountry);
+productData.append('currency', currency);
+productData.append('msrp', msrp);
+productData.append('selling_price', sellingPrice);
+productData.append('discount_price', discountPrice);
     
     if (formData.attachment_list.length > 0) {
-        formData.attachment_list.forEach(file => productData.append('documents', file));
-    }
-    
-    // Append images
-    if (formData.image_list.length > 0) {
-        formData.image_list.forEach(file => productData.append('images', file));
-    }
-    
-    // Append videos
-    if (formData.video_list.length > 0) {
-        formData.video_list.forEach(file => productData.append('videos', file));
-    }
+    formData.attachment_list.forEach(file => productData.append('documents', file));
+}
+
+// Append images
+if (formData.image_list.length > 0) {
+    formData.image_list.forEach(file => productData.append('images', file));
+}
+
+// Append videos
+if (formData.video_list.length > 0) {
+    formData.video_list.forEach(file => productData.append('videos', file));
+}
   
     // Add vendor and brand information
-    productData.append('vendor_id', vendor);
-    productData.append('brand_id', brand);
-    productData.append('manufacture_id', manufacturer);
-        try {
-            const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/createProduct/`, productData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data' // Make sure the correct content-type is set
-                }
-            });
-                        if ( response.data.data.is_created === true) {
-                            setInputStyle({
-                                color: 'transparent', 
-                                textAlign: 'center',
-                                background: 'none',
-                                cursor: 'pointer',
-                              });
-                              setLoading(false);
-                Swal.fire({
-                    title: 'Product Created!',
-                    text: 'The product has been successfully created.',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                })
-                    .then((result) => {
-                        clearProductData();
-                        if (result.isConfirmed) {
-                            navigate(`/Admin/products/`);
-                        }
-                    });
-            } else {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'There was an error creating the product. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    clearProductData();
-                });
+   productData.append('vendor_id', vendor);
+productData.append('brand_id', brand);
+productData.append('manufacture_id', manufacturer);
+    try {
+        const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/createProduct/`, productData, {
+            headers: {
+                'Content-Type': 'multipart/form-data' // Make sure the correct content-type is set
             }
-        } catch (error) {
-            console.error('Error creating product:', error);
+        });
+        
+        console.log('Create product API Response:', response.data); // Debug log
+        
+        if (response.data.is_created === true) { // Remove the extra .data layer
+            setInputStyle({
+                color: 'transparent', 
+                textAlign: 'center',
+                background: 'none',
+                cursor: 'pointer',
+              });
+              setLoading(false);
+            Swal.fire({
+                title: 'Product Created!',
+                text: 'The product has been successfully created.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            })
+                .then((result) => {
+                    clearProductData();
+                    if (result.isConfirmed) {
+                        navigate(`/Admin/products/`);
+                    }
+                });
+        } else {
+            setLoading(false);
+            Swal.fire({
+                title: 'Error!',
+                text: 'There was an error creating the product. Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                clearProductData();
+            });
         }
-    };
+    } catch (error) {
+           console.error('Error creating product:', error);
+        setLoading(false);
+        Swal.fire({
+            title: 'Error!',
+            text: 'There was an error creating the product. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
+};
     const handleBackToProductList = () => {
         navigate('/Admin/products');  // Adjust the path to match your brand list route
       };

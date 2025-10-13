@@ -60,7 +60,7 @@ const CategoryList = ({ isSidebarOpen, toggleSidebar }) => {
             if (response.status === 401) {
               setUnauthorized(true);
             } 
-            setCategories(response.data.data.category_levels);
+            setCategories(response.data.category_levels || []);
             setLoadingforCategory(false);
             setLoader(false);
         } catch (error) {

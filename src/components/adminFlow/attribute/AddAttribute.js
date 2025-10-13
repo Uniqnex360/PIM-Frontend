@@ -30,42 +30,46 @@ const AddAttribute = ({ isSidebarOpen, toggleSidebar }) => {
     const navigate = useNavigate();    
 
   // Function to fetch module data
-  const fetchModuleData = async () => {
-    if (!module) return;
+const fetchModuleData = async () => {
+  if (!module) return;
 
-    setLoading(true);
-    let endpoint = '';
+  setLoading(true);
+  let endpoint = '';
 
-    switch (module) {
-      case 'brand':
-        endpoint = '/obtainBrand/?search=';
-        break;
-      case 'category':
-        endpoint = '/obtainCategory/?search=';
-        break;
-      default:
-        setModuleData([]);
-        setLoading(false);
-        return;
-    }
-
-    try {
-      const response = await axiosInstance.get(`${process.env.REACT_APP_IP}${endpoint}`);
-      if (module === 'brand') {
-        setModuleData(response.data.data.brand_list || []);
-      } else if (module === 'category') {
-        setModuleData(response.data.data.category_levels || []);
-      }
-      else if (module === 'select') {
-        setModuleData([]);
-      }
-    } catch (error) {
-      console.error('Error fetching module data:', error);
-      Swal.fire('Error!', 'An error occurred while fetching data. Please try again.', 'error');
-    } finally {
+  switch (module) {
+    case 'brand':
+      endpoint = '/obtainBrand/?search=';
+      break;
+    case 'category':
+      endpoint = '/obtainCategory/?search=';
+      break;
+    default:
+      setModuleData([]);
       setLoading(false);
+      return;
+  }
+
+  try {
+    const response = await axiosInstance.get(`${process.env.REACT_APP_IP}${endpoint}`);
+    console.log('API Response:', response.data); // Add this to debug the response structure
+    
+    if (module === 'brand') {
+      // Fix: Access brand_list directly from response.data, not response.data.data
+      setModuleData(response.data.brand_list || []);
+    } else if (module === 'category') {
+      // Fix: Check the actual response structure for categories too
+      setModuleData(response.data.category_levels || response.data.data?.category_levels || []);
     }
-  };
+    else if (module === 'select') {
+      setModuleData([]);
+    }
+  } catch (error) {
+    console.error('Error fetching module data:', error);
+    Swal.fire('Error!', 'An error occurred while fetching data. Please try again.', 'error');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Trigger fetching data when module changes
   useEffect(() => {
@@ -160,51 +164,60 @@ const AddAttribute = ({ isSidebarOpen, toggleSidebar }) => {
   };
   
 
-  const handleSubmit = async () => {
-    if (!name || !type || !module || attributeValues.length === 0) {
-      Swal.fire('Error!', 'Please fill all fields and add at least one attribute value', 'error');
-      return;
-    }
 
-    let payload = {
-      name,
-      type,
-      module_id: module === 'brand' ? selectedBrands : selectedCategoryConfigId, // Send selected brands or categories based on the module
-      values: attributeValues,
-      module_name: module,
-    };
+const handleSubmit = async () => {
+  if (!name || !type || !module || attributeValues.length === 0) {
+    Swal.fire('Error!', 'Please fill all fields and add at least one attribute value', 'error');
+    return;
+  }
 
-    try {
-      const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/createAttribute/`, payload);      
-      if (response.data.data.is_created === true) {
-        setName('');
-        setType('text');
-        setModule('');
-        setAttributeValues([]);
-        setSelectedBrands([]); // Clear selected brands/categories
-        setSelectedCategories([]); // Clear selected categories
-        Swal.fire({
-          title: 'Success!',
-          text: 'New attribute added successfully.',
-          icon: 'success',
-          confirmButtonText: 'OK',
-          allowOutsideClick: false, // Disable closing by clicking outside
-        }).then((result) => {
-          if (result.isConfirmed) {
-            handleBackToAttributeList(module);
-          }
-        });
-        
-      }else if (response.data.data.is_created === false) {
-                      Swal.fire({ title: 'Warning!', text: 'This attribute is already present.', icon: 'warning', confirmButtonText: 'OK'  }); 
-                  } else {
-        Swal.fire('Error!', 'Failed to add the attribute. Please try again.', 'error');
-      }
-    } catch (error) {
-      Swal.fire('Error!', 'An error occurred while adding the attribute. Please try again.', 'error');
-      console.error('Error adding attribute:', error);
-    }
+  let payload = {
+    name,
+    type,
+    module_id: module === 'brand' ? selectedBrands : selectedCategoryConfigId,
+    values: attributeValues,
+    module_name: module,
   };
+
+  try {
+    const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/createAttribute/`, payload);
+    console.log('Create Attribute Response:', response.data); // Add this to debug
+    
+     const isCreated = response.data?.data?.is_created || response.data?.is_created;
+    
+    if (isCreated === true) {
+      setName('');
+      setType('text');
+      setModule('');
+      setAttributeValues([]);
+      setSelectedBrands([]);
+      setSelectedCategories([]);
+      Swal.fire({
+        title: 'Success!',
+        text: 'New attribute added successfully.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        allowOutsideClick: false,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          handleBackToAttributeList(module);
+        }
+      });
+    } else if (isCreated === false) {
+      Swal.fire({ 
+        title: 'Warning!', 
+        text: 'This attribute is already present.', 
+        icon: 'warning', 
+        confirmButtonText: 'OK'  
+      }); 
+    } else {
+      Swal.fire('Error!', 'Failed to add the attribute. Please try again.', 'error');
+    }
+  } catch (error) {
+    Swal.fire('Error!', 'An error occurred while adding the attribute. Please try again.', 'error');
+    console.error('Error adding attribute:', error);
+  }
+};
   const handleBackToAttributeList = (module) => {
     if (module.length > 0) {
       navigate(`/Admin/attributes?module=${module}`);

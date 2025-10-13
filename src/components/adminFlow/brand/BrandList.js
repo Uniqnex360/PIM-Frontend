@@ -52,8 +52,8 @@ const BrandList = ({ isSidebarOpen, toggleSidebar }) => {
       if (response.status === 401) {
         setUnauthorized(true);
       } 
-      setBrandCounts(response.data.data.brand_count || []);
-      const brandList = response.data.data.brand_list || [];
+ setBrandCounts(response.data.brand_count || 0);
+const brandList = response.data.brand_list || [];
       setBrands(brandList);
       setLoader(false);
     } catch (error) {

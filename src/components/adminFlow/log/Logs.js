@@ -58,246 +58,300 @@ setActiveAttributeTab('attribute');
         fetchAttributeLogs(activeattributeTab);
       } 
   }, [activeImportTab, activeExportTab,activevendorTab,activebrandTab,activecategoryTab,activeattributeTab]);
-
-  const fetchLogs = async (tab) => {
+const fetchLogs = async (tab) => {
     let apiEndpoint = {
-      brand: 'obtainBrandLog',
-      supplier: 'obtainVendorLog',
-      category: 'obtainCategoryLog',
-      product: 'obtainProductLog',
-      attribute:'obtainAttributeLog',
+        brand: 'obtainBrandLog',
+        supplier: 'obtainVendorLog',
+        category: 'obtainCategoryLog',
+        product: 'obtainProductLog',
+        attribute:'obtainAttributeLog',
     }[tab] || 'obtainVendorLog';
     
     if (tab === 'import') {
-      fetchImportLogs(activeImportTab);
-      return;
+        fetchImportLogs(activeImportTab);
+        return;
     }
     if (tab === 'export') {
-      fetchExportLogs(activeExportTab);
-      return;
+        fetchExportLogs(activeExportTab);
+        return;
     }
     if (tab === 'supplier') {
         fetchVendorLogs(activevendorTab);
         return;
-      }
-      if (tab === 'brand') {
+    }
+    if (tab === 'brand') {
         fetchBrandLogs(activebrandTab);
         return;
-      }
-      if (tab === 'category') {
+    }
+    if (tab === 'category') {
         fetchCategoryLogs(activecategoryTab);
         return;
-      }
-      if (tab === 'attribute') {
+    }
+    if (tab === 'attribute') {
         fetchAttributeLogs(activeattributeTab);
         return;
-      }
+    }
     
     try {
-      const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/${apiEndpoint}/`);
-      if (response.status === 401) {
-        setUnauthorized(true);
-      } 
-      const logKey = `${tab}_log_list`;
-      setLoader(false);
-      setLogs(response.data.data[logKey] || []);
+     const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/${apiEndpoint}/`);
+        console.log(`${tab} logs API Response:`, response.data); // Debug log
+        
+        if (response.status === 401) {
+            setUnauthorized(true);
+        } 
+        const logKey = `${tab}_log_list`;
+        setLoader(false);
+        setLogs(response.data[logKey] || []); // Remove the extra .data layer
     } catch (error) {
-      setLoader(false);
-      console.error(`Error fetching ${tab} logs`, error);
+        setLoader(false);
+        if (error.response?.status === 401) {
+            setUnauthorized(true);
+        }
+        console.error(`Error fetching ${tab} logs`, error);
     }
-  };
+};
 
   const fetchImportLogs = async (importType) => {
     let apiEndpoint = 'obtainImportLog';
 
     let actionParam = {
-      product_import: 'product',
-      channel_import: 'channel',
-      dam_import: 'dam',
+        product_import: 'product',
+        channel_import: 'channel',
+        dam_import: 'dam',
     }[importType] || 'product';
 
     try {
-      const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/${apiEndpoint}/?action=${actionParam}`);
-      setLoader(false);
-      setLogs(response.data.data.import_log_list || []);
-      if (response.status === 401) {
-        setUnauthorized(true);
-      } 
+        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/${apiEndpoint}/?action=${actionParam}`);
+        console.log(`${importType} import logs API Response:`, response.data); // Debug log
+        
+        setLoader(false);
+        setLogs(response.data.import_log_list || []); // Remove the extra .data layer
+        if (response.status === 401) {
+            setUnauthorized(true);
+        } 
     } catch (error) {
-      setLoader(false);
-      console.error(`Error fetching ${importType} logs`, error);
+        setLoader(false);
+        if (error.response?.status === 401) {
+            setUnauthorized(true);
+        }
+        console.error(`Error fetching ${importType} logs`, error);
     }
-  };
-  const fetchVendorLogs = async (importType) => {
+};
+const fetchVendorLogs = async (importType) => {
     console.log(importType,'importType supplier');
-    let apiEndpoint =  '';
-if (importType === 'import') {
-    apiEndpoint =  'obtainImportLog';
-}
-if (importType === 'export') {
-    apiEndpoint =  'obtainExportLog';
-}
+    let apiEndpoint = '';
+    if (importType === 'import') {
+        apiEndpoint = 'obtainImportLog';
+    }
+    if (importType === 'export') {
+        apiEndpoint = 'obtainExportLog';
+    }
     let actionParam = 'supplier';
+    
     if (importType === 'supplier') {
         try {
             const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainVendorLog/`);
+            console.log('Vendor logs API Response:', response.data); // Debug log
+            
             if (response.status === 401) {
-              setUnauthorized(true);
+                setUnauthorized(true);
             } 
             setLoader(false);
-            setLogs(response.data.data.vendor_log_list || []);
-          } catch (error) {
+            setLogs(response.data.vendor_log_list || []); // Remove the extra .data layer
+        } catch (error) {
             setLoader(false);
-            if (error.status === 401) {
-              setUnauthorized(true);
+            if (error.response?.status === 401) {
+                setUnauthorized(true);
             } 
             console.error(`Error fetching ${importType} logs`, error);
-          }
-    }
-    else{
-        try {
+        }
+    } else {
+       try {
             const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/${apiEndpoint}/?action=${actionParam}`);
+            console.log(`Vendor ${importType} logs API Response:`, response.data); // Debug log
+            
             if (response.status === 401) {
-              setUnauthorized(true);
+                setUnauthorized(true);
             } 
             setLoader(false);
             if (importType === 'import') {
-                setLogs(response.data.data.import_log_list || []);
+                setLogs(response.data.import_log_list || []); // Remove the extra .data layer
             } else if (importType === 'export') {
-                setLogs(response.data.data.export_log_list || []);
+                setLogs(response.data.export_log_list || []); // Remove the extra .data layer
             }
-          } catch (error) {
+        } catch (error) {
             setLoader(false);
+            if (error.response?.status === 401) {
+                setUnauthorized(true);
+            }
             console.error(`Error fetching ${importType} logs`, error);
-          }
+        }
     }
-  };
+};
   if (unauthorized) {
     navigate(`/unauthorized`);
   }
   const fetchBrandLogs = async (importType) => {
     console.log(importType,'importType brand');
-    let apiEndpoint =  '';
-if (importType === 'import') {
-    apiEndpoint =  'obtainImportLog';
-}
-if (importType === 'export') {
-    apiEndpoint =  'obtainExportLog';
-}
+    let apiEndpoint = '';
+    if (importType === 'import') {
+        apiEndpoint = 'obtainImportLog';
+    }
+    if (importType === 'export') {
+        apiEndpoint = 'obtainExportLog';
+    }
     let actionParam = 'brand';
+    
     if (importType === 'brand') {
         try {
             const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainBrandLog/`);
+            console.log('Brand logs API Response:', response.data); // Debug log
+            
             const logKey = `${importType}_log_list`;
             setLoader(false);
-            setLogs(response.data.data[logKey] || []);
-          } catch (error) {
+            setLogs(response.data[logKey] || []); // Remove the extra .data layer
+        } catch (error) {
+            setLoader(false);
+            if (error.response?.status === 401) {
+                setUnauthorized(true);
+            }
             console.error(`Error fetching ${importType} logs`, error);
-          }
-    }
-    else{
+        }
+    } else {
         try {
             const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/${apiEndpoint}/?action=${actionParam}`);
+            console.log(`Brand ${importType} logs API Response:`, response.data); // Debug log
+            
             setLoader(false);
             if (importType === 'import') {
-                setLogs(response.data.data.import_log_list || []);
+                setLogs(response.data.import_log_list || []); // Remove the extra .data layer
             } else if (importType === 'export') {
-                setLogs(response.data.data.export_log_list || []);
+                setLogs(response.data.export_log_list || []); // Remove the extra .data layer
             }
-          } catch (error) {
+        } catch (error) {
             setLoader(false);
+            if (error.response?.status === 401) {
+                setUnauthorized(true);
+            }
             console.error(`Error fetching ${importType} logs`, error);
-          }
+        }
     }
-  };
-  const fetchCategoryLogs = async (importType) => {
+};
+ 
+const fetchCategoryLogs = async (importType) => {
     console.log(importType,'importType Category');
-    let apiEndpoint =  '';
-if (importType === 'import') {
-    apiEndpoint =  'obtainImportLog';
-}
-if (importType === 'export') {
-    apiEndpoint =  'obtainExportLog';
-}
+    let apiEndpoint = '';
+    if (importType === 'import') {
+        apiEndpoint = 'obtainImportLog';
+    }
+    if (importType === 'export') {
+        apiEndpoint = 'obtainExportLog';
+    }
     let actionParam = 'category';
+    
     if (importType === 'category') {
         try {
             const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainCategoryLog/`);
+            console.log('Category logs API Response:', response.data); // Debug log
+            
             const logKey = `${importType}_log_list`;
-            setLogs(response.data.data[logKey] || []);
+            setLogs(response.data[logKey] || []); // Remove the extra .data layer
             setLoader(false);
-          } catch (error) {
+        } catch (error) {
             setLoader(false);
+            if (error.response?.status === 401) {
+                setUnauthorized(true);
+            }
             console.error(`Error fetching ${importType} logs`, error);
-          }
-    }
-    else{
+        }
+    } else {
         try {
             const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/${apiEndpoint}/?action=${actionParam}`);
+            console.log(`Category ${importType} logs API Response:`, response.data); // Debug log
+            
             setLoader(false);
             if (importType === 'import') {
-                setLogs(response.data.data.import_log_list || []);
+                setLogs(response.data.import_log_list || []); // Remove the extra .data layer
             } else if (importType === 'export') {
-                setLogs(response.data.data.export_log_list || []);
+                setLogs(response.data.export_log_list || []); // Remove the extra .data layer
             }
-          } catch (error) {
+        } catch (error) {
             setLoader(false);
+            if (error.response?.status === 401) {
+                setUnauthorized(true);
+            }
             console.error(`Error fetching ${importType} logs`, error);
-          }
+        }
     }
-  };
-  const fetchAttributeLogs = async (importType) => {
+};
+const fetchAttributeLogs = async (importType) => {
     console.log(importType,'importType attribute');
-    let apiEndpoint =  '';
-if (importType === 'import') {
-    apiEndpoint =  'obtainImportLog';
-}
-if (importType === 'export') {
-    apiEndpoint =  'obtainExportLog';
-}
+    let apiEndpoint = '';
+    if (importType === 'import') {
+        apiEndpoint = 'obtainImportLog';
+    }
+    if (importType === 'export') {
+        apiEndpoint = 'obtainExportLog';
+    }
     let actionParam = 'attribute';
+    
     if (importType === 'attribute') {
         try {
             const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainAttributeLog/`);
+            console.log('Attribute logs API Response:', response.data); // Debug log
+            
             const logKey = `${importType}_log_list`;
-            setLogs(response.data.data[logKey] || []);
+            setLogs(response.data[logKey] || []); // Remove the extra .data layer
             setLoader(false);
-          } catch (error) {
+        } catch (error) {
+            setLoader(false);
+            if (error.response?.status === 401) {
+                setUnauthorized(true);
+            }
             console.error(`Error fetching ${importType} logs`, error);
-          }
-    }
-    else{
+        }
+    } else {
         try {
             const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/${apiEndpoint}/?action=${actionParam}`);
+            console.log(`Attribute ${importType} logs API Response:`, response.data); // Debug log
+            
             setLoader(false);
             if (importType === 'import') {
-                setLogs(response.data.data.import_log_list || []);
+                setLogs(response.data.import_log_list || []); // Remove the extra .data layer
             } else if (importType === 'export') {
-                setLogs(response.data.data.export_log_list || []);
+                setLogs(response.data.export_log_list || []); // Remove the extra .data layer
             }
-          } catch (error) {
+        } catch (error) {
             setLoader(false);
+            if (error.response?.status === 401) {
+                setUnauthorized(true);
+            }
             console.error(`Error fetching ${importType} logs`, error);
-          }
+        }
     }
-  };
-  const fetchExportLogs = async (exportType) => {
+};
+const fetchExportLogs = async (exportType) => {
     let apiEndpoint = 'obtainExportLog';
     let actionParam = {
         product_export: 'product',
         channel_export: 'channel',
         // other_import: 'other',
-      }[exportType] || 'product';
-  
+    }[exportType] || 'product';
+
     try {
-      const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/${apiEndpoint}/?action=${actionParam}`);
-      setLoader(false);
-      setLogs(response.data.data.export_log_list || []);
+        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/${apiEndpoint}/?action=${actionParam}`);
+        console.log(`${exportType} export logs API Response:`, response.data); // Debug log
+        
+        setLoader(false);
+        setLogs(response.data.export_log_list || []); // Remove the extra .data layer
     } catch (error) {
-      setLoader(false);
-      console.error(`Error fetching ${exportType} logs`, error);
+        setLoader(false);
+        if (error.response?.status === 401) {
+            setUnauthorized(true);
+        }
+        console.error(`Error fetching ${exportType} logs`, error);
     }
-  };
+};
   const downloadErrorList = (errorList) => {
     if (!errorList || errorList.length === 0) {
       Swal.fire({ title: 'Error!', text: 'No errors to export.', icon: 'error' });

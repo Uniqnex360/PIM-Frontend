@@ -73,85 +73,90 @@ const ProductList = ({ isSidebarOpen, toggleSidebar }) => {
     }, []);
     let totalPages= Math.ceil(productCount / itemsPerPage);  // Calculate total pages based on brand count
     let currentProducts = products.slice(0, itemsPerPage);  // Get the products for the current page
-    const fetchBrands = async () => {
-      try {
-        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainBrand/?search=`);
-        setBrands(response.data.data.brand_list || []);
-      } catch (error) {
-        console.error('Error fetching brands', error);
-      }
-    };
+const fetchBrands = async () => {
+  try {
+    const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainBrand/?search=`);
+    console.log('Brands API Response:', response.data); // Debug log
+    setBrands(response.data.brand_list || []);
+  } catch (error) {
+    console.error('Error fetching brands', error);
+  }
+};
   
-    const fetchVendors = async () => {
-      try {
-       const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainVendor/?search=`);
-       setVendors(response.data.data.vendor_list || []);
-      } catch (error) {
-        console.error('Error fetching vendors', error);
-      }
-    };
+  const fetchVendors = async () => {
+  try {
+   const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainVendor/?search=`);
+   console.log('Vendors API Response:', response.data); // Debug log
+   setVendors(response.data.vendor_list || []);
+  } catch (error) {
+    console.error('Error fetching vendors', error);
+  }
+};
+  const fetchCategories = async () => {
+  try {
+    const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainCategory/?search=`);
+    console.log('Categories API Response:', response.data); // Debug log
+    setCategories(response.data.category_levels || []);
+  } catch (error) {
+    console.error('Error fetching categories', error);
+  }
+};
   
-    const fetchCategories = async () => {
-      try {
-        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainCategory/?search=`);
-        setCategories(response.data.data.category_levels || []);
-      } catch (error) {
-        console.error('Error fetching categories', error);
-      }
-    };
-  
-  // Fetch products based on search query
-  const fetchProducts = async (sortOption,searchQuery = "", page=1) => {
-setLoadingforPagination(true);
-setProducts([]);
-    const payload = {
-      page:page,
-      search: searchQuery,
-      filter: sortOption,
-      brand_id: selectedBrands,
-      vendor_id: selectedVendors,
-      category_id: selectedCategories
+// Fetch products based on search query
+const fetchProducts = async (sortOption, searchQuery = "", page = 1) => {
+  setLoadingforPagination(true);
+  setProducts([]);
+  const payload = {
+    page: page,
+    search: searchQuery,
+    filter: sortOption,
+    brand_id: selectedBrands,
+    vendor_id: selectedVendors,
+    category_id: selectedCategories
   };
   if (category_id) {
-      payload.category_id = [category_id]; // Send category_id in array format
+    payload.category_id = [category_id]; // Send category_id in array format
   }
   else if (sub_category_name) {
     const subcategories = JSON.parse(localStorage.getItem('sub_category_id'));
     payload.category_id = subcategories; // Send category_id in array format
   }
-    try {
-      const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/obtainAllProductList/`, payload);
-      if (response.status === 401) {
-        setUnauthorized(true);
-      } 
-      setProductCounts(response.data.data.product_count || 0);
-      setProducts(response.data.data.product_list);
-      let filteredBrands = filterLetter
-      ? products.filter((product) => product.name[0].toUpperCase() === filterLetter.toUpperCase())
-      : products;
-       totalPages = Math.ceil(productCount / itemsPerPage);  // Calculate total pages based on brand count
-      let startIndex = (currentPage - 1) * itemsPerPage;
-       currentProducts = filteredBrands.slice(startIndex, startIndex + itemsPerPage);
-       setLoader(false);
-       setLoadingforPagination(false);
-      setIsLoading(false);
-    } catch (err) {
-      setLoader(false);
-      if (err.status === 401) {
-        setUnauthorized(true);
-      }else{
-        Swal.fire({
-          title: 'Error!',
-          text: 'Failed to load products data.',
-          icon: 'error',
-          confirmButtonText: 'OK',
-        });
-        console.error("Error fetching products:", err);
-      }
-   
-      setIsLoading(false);
+  try {
+    const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/obtainAllProductList/`, payload);
+    if (response.status === 401) {
+      setUnauthorized(true);
+    } 
+    console.log('Products API Response:', response.data); // Debug log
+    // Remove the extra .data layer - access directly from response.data
+    setProductCounts(response.data.product_count || 0);
+    setProducts(response.data.product_list || []);
+    let filteredBrands = filterLetter
+    ? products.filter((product) => product.name[0].toUpperCase() === filterLetter.toUpperCase())
+    : products;
+     totalPages = Math.ceil(productCount / itemsPerPage);  // Calculate total pages based on brand count
+    let startIndex = (currentPage - 1) * itemsPerPage;
+     currentProducts = filteredBrands.slice(startIndex, startIndex + itemsPerPage);
+     setLoader(false);
+     setLoadingforPagination(false);
+    setIsLoading(false);
+  } catch (err) {
+    setLoader(false);
+    if (err.status === 401) {
+      setUnauthorized(true);
+    }else{
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to load products data.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      console.error("Error fetching products:", err);
     }
-  };
+ 
+    setIsLoading(false);
+  }
+};
+
   const handleSortChange = (e) => {
     setLoader(true);
     const selectedOption = e.target.value;

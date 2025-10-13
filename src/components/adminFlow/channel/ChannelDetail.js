@@ -73,32 +73,35 @@ const ChannelDetail = ({ isSidebarOpen, toggleSidebar }) => {
     fetchChannelWise();
   }, []);
 
-  const fetchBrands = async () => {
+const fetchBrands = async () => {
     try {
-      const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainBrand/?search=`);
-      setBrands(response.data.data.brand_list || []);
+        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainBrand/?search=`);
+        console.log('Brands API Response:', response.data); // Debug log
+        setBrands(response.data.brand_list || []); // Remove the extra .data layer
     } catch (error) {
-      console.error('Error fetching brands', error);
+        console.error('Error fetching brands', error);
     }
-  };
+};
 
-  const fetchVendors = async () => {
+const fetchVendors = async () => {
     try {
-     const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainVendor/?search=`);
-     setVendors(response.data.data.vendor_list || []);
+        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainVendor/?search=`);
+        console.log('Vendors API Response:', response.data); // Debug log
+        setVendors(response.data.vendor_list || []); // Remove the extra .data layer
     } catch (error) {
-      console.error('Error fetching vendors', error);
+        console.error('Error fetching vendors', error);
     }
-  };
+};
 
-  const fetchCategories = async () => {
+const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainCategory/?search=`);
-      setCategories(response.data.data.category_levels || []);
+        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainCategory/?search=`);
+        console.log('Categories API Response:', response.data); // Debug log
+        setCategories(response.data.category_levels || []); // Remove the extra .data layer
     } catch (error) {
-      console.error('Error fetching categories', error);
+        console.error('Error fetching categories', error);
     }
-  };
+};
 
   // Fallback content if the channel is not found
   const channel = channelInfo[channelName] || {
@@ -123,25 +126,33 @@ const ChannelDetail = ({ isSidebarOpen, toggleSidebar }) => {
         icon: 'success'
       });
     };
-    const fetchChannelWise = async () => {
-      setLoader(true);
-      try {
-          const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainChannelwiseTaxonomy/?channel_name=${channelName}`);
-          setLoader(false);
-          if (response.status === 401) {
-            setUnauthorized(true);
-          } 
-          setChannels(response.data.data.category_group_list || []);
-      } catch (error) {
+const fetchChannelWise = async () => {
+    setLoader(true);
+    try {
+        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainChannelwiseTaxonomy/?channel_name=${channelName}`);
+        console.log('Channel wise API Response:', response.data); // Debug log
+        
         setLoader(false);
-        if (error.status === 401) {
-          setUnauthorized(true);
-        }else{
-          console.error('Error fetching Counts:', error);
-          Swal.fire({ title: 'Error!', text: 'Failed to load Assets Counts.', icon: 'error', confirmButtonText: 'OK' });
+        if (response.status === 401) {
+            setUnauthorized(true);
+        } 
+        // Fix: Remove the extra .data layer - the API returns data directly
+        setChannels(response.data.category_group_list || []);
+    } catch (error) {
+        setLoader(false);
+        if (error.response?.status === 401) {
+            setUnauthorized(true);
+        } else {
+            console.error('Error fetching Counts:', error);
+            Swal.fire({ 
+                title: 'Error!', 
+                text: 'Failed to load channel taxonomy data.', 
+                icon: 'error', 
+                confirmButtonText: 'OK' 
+            });
         }
-      }
-  };
+    }
+};
   if (unauthorized) {
     navigate(`/unauthorized`);
   }

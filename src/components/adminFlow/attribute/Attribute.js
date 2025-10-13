@@ -42,53 +42,87 @@ const Attribute = ({ isSidebarOpen, toggleSidebar }) => {
   const [attributes, setAttributes] = useState([]);
   const [attributeGroups, setAttributeGroups] = useState([]);
   // Sample static data for each tab (this can later be updated dynamically)
-  const fetchAttributeData = async (tag) => {
-    try {
-      const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainAttribute/?module=${tag}`);
-      if (response.status === 401) {
-        setUnauthorized(true);
-      } 
-      if (response.data && response.data.data.attribute_list) {
-        setLoader(false);
-        setAttributes(response.data.data.attribute_list); // Storing the attribute list
-      }
-    } catch (error) {
-      setLoader(false);
-      if (error.status === 401) {
-        setUnauthorized(true);
-      }else{
-        Swal.fire({
-          title: 'Error!',
-          text: 'Failed to fetch attribute data.',
-          icon: 'error',
-          confirmButtonText: 'OK',
-        });
-      }
+ 
+const fetchAttributeData = async (tag) => {
+  setLoader(true);
+  try {
+    const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainAttribute/?module=${tag}`);
+    if (response.status === 401) {
+      setUnauthorized(true);
+      return;
+    } 
+    console.log('response', response);
     
-      console.error('Error fetching attribute data:', error);
+    // Fix: Change from response.data.data.attribute_list to response.data.attribute_list
+    if (response.data && response.data.attribute_list) {
+      setLoader(false);
+      setAttributes(response.data.attribute_list); // Correct path - removed the extra .data
+    } else {
+      setLoader(false);
+      setAttributes([]); // Set empty array as fallback
     }
-  };
+  } catch (error) {
+    setLoader(false);
+    // Fix: Change from error.status to error.response?.status
+    if (error.response && error.response.status === 401) {
+      setUnauthorized(true);
+    } else {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to fetch attribute data.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+    }
+    console.error('Error fetching attribute data:', error);
+    setAttributes([]); // Set empty array on error
+  }
+};
+useEffect(() => {
+  fetchAttributeData(currentModule);
+  // Call fetchAttributeDataGroup when component mounts or when activeTab changes to 'attributes-group'
+  if (activeTab === 'attributes-group') {
+    fetchAttributeDataGroup();
+  }
+}, [currentModule]); 
 
-  useEffect(() => {
-    fetchAttributeData(currentModule); // Initially load "global" data
-    // fetchAttributeDataGroup();
-  }, []); // Runs once when component mounts
+
+// Runs once when component mounts
   useEffect(() => {
     fetchModuleData();
   }, [selectedTag]);
-  // const fetchAttributeDataGroup = async () => {
-  //   try {
-  //     const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainAttributeGroup/`);
-  //     console.log('response', response);
-      
-  //     if (response.data && response.data.data.attribute_list) {
-  //       setAttributeGroups(response.data.data.attribute_list); // Storing the attribute list
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching attribute data:', error);
-  //   }
-  // };
-  // Function to handle tag clicks
+const fetchAttributeDataGroup = async () => {
+  setLoader(true);
+  try {
+    const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainAttributeGroup/`);
+    console.log('Attribute Group response:', response.data);
+    
+    // Fix: Check the actual response structure and adjust accordingly
+    if (response.data && response.data.attribute_list) {
+      setAttributeGroups(response.data.attribute_list);
+    } else if (response.data && response.data.data && response.data.data.attribute_list) {
+      setAttributeGroups(response.data.data.attribute_list);
+    } else {
+      setAttributeGroups([]);
+    }
+    setLoader(false);
+  } catch (error) {
+    setLoader(false);
+    console.error('Error fetching attribute group data:', error);
+    if (error.response && error.response.status === 401) {
+      setUnauthorized(true);
+    } else {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to fetch attribute group data.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+    }
+    setAttributeGroups([]);
+  }
+};
+
   const handleTagClick = (tag) => {
     navigate(`/Admin/attributes?module=${tag}`);
     setSelectedTag(tag); // Set the selected tag
@@ -108,91 +142,99 @@ const Attribute = ({ isSidebarOpen, toggleSidebar }) => {
     navigate('/Admin/attribute/add');  // Adjust the path to match your brand list route
   };
   
-  const handleAddAttributeGroup = () => {
-    Swal.fire({
-      title: 'Add Attribute Group',
-      html: `
-        <div>
-          <input id="groupName" class="swal2-input" autocomplete="off" placeholder="Group Name" style="margin: 0px 0px 10px 0px; font-size: 16px;width:100%;" required>
-          <input id="groupDescription" class="swal2-input" autocomplete="off" placeholder="Group Code" style="margin: 0px 0px 10px 0px; font-size: 16px;width:100%;" required>
-          <select id="attributeDropdown" class="swal2-input" style="margin: 0px 0px 10px 0px; font-size: 16px; width:100%;" required>
-            <option value="">Select an Attribute</option>
-            ${attributes.map(attr => `<option value="${attr.id}">${attr.name}</option>`)}
-          </select>
-        </div>
-      `,
-      focusConfirm: false,
-      showCancelButton: true,
-      cancelButtonText: 'Cancel',
-      preConfirm: async () => {
-        const groupName = document.getElementById('groupName').value;
-        const groupDescription = document.getElementById('groupDescription').value;
-        const selectedAttribute = document.getElementById('attributeDropdown').value;
+const handleAddAttributeGroup = () => {
+  Swal.fire({
+    title: 'Add Attribute Group',
+    html: `
+      <div>
+        <input id="groupName" class="swal2-input" autocomplete="off" placeholder="Group Name" style="margin: 0px 0px 10px 0px; font-size: 16px;width:100%;" required>
+        <input id="groupDescription" class="swal2-input" autocomplete="off" placeholder="Group Code" style="margin: 0px 0px 10px 0px; font-size: 16px;width:100%;" required>
+        <select id="attributeDropdown" class="swal2-input" style="margin: 0px 0px 10px 0px; font-size: 16px; width:100%;" required>
+          <option value="">Select an Attribute</option>
+          ${attributes.map(attr => `<option value="${attr.id}">${attr.name}</option>`)}
+        </select>
+      </div>
+    `,
+    focusConfirm: false,
+    showCancelButton: true,
+    cancelButtonText: 'Cancel',
+    preConfirm: async () => {
+      const groupName = document.getElementById('groupName').value;
+      const groupDescription = document.getElementById('groupDescription').value;
+      const selectedAttribute = document.getElementById('attributeDropdown').value;
 
-        if (!groupName || !groupDescription || !selectedAttribute) {
-          Swal.showValidationMessage('Please fill all fields and select an attribute');
-          return false;
-        }
+      if (!groupName || !groupDescription || !selectedAttribute) {
+        Swal.showValidationMessage('Please fill all fields and select an attribute');
+        return false;
+      }
 
-        try {
-          const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/createAttributeGroup/`, {
-            name: groupName,
-            code: groupDescription,
-            attributes: [selectedAttribute], // Send the selected attribute ID
-          });
+      try {
+        const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/createAttributeGroup/`, {
+          name: groupName,
+          code: groupDescription,
+          attributes: [selectedAttribute],
+        });
 
-          if (response.data.data.is_created === true) {
-            Swal.fire('Success!', 'New attribute group added successfully.', 'success');
-            // fetchAttributeDataGroup();
-          } else {
-            Swal.fire('Error!', 'Failed to add the attribute group. Please try again.', 'error');
-          }
-        } catch (error) {
-          Swal.fire('Error!', 'An error occurred while adding the attribute group. Please try again.', 'error');
-          console.error('Error adding attribute group:', error);
+        console.log('Create Attribute Group Response:', response.data);
+
+        if (response.data && response.data.is_created === true) {
+          Swal.fire('Success!', 'New attribute group added successfully.', 'success');
+          // Refresh the attribute groups list
+          fetchAttributeDataGroup();
+        } else if (response.data && response.data.is_created === false) {
+          Swal.fire('Warning!', 'This attribute group already exists.', 'warning');
+        } else {
+          Swal.fire('Error!', 'Failed to add the attribute group. Please try again.', 'error');
         }
-      },
-    });
-  };
-      const fetchModuleData = async () => {
-        if (!selectedTag) return;
-        setLoader(true);
-        setLoading(true);
-        let endpoint = '';
-      
-        switch (selectedTag) {
-          case 'brand':
-            endpoint = '/obtainBrand/?search=';
-            break;
-          case 'category':
-            endpoint = '/obtainCategory/?search=';
-            break;
-          default:
-            setModuleData([]);
-            setLoading(false);
-            return;
-        }
-      
-        try {
-          const response = await axiosInstance.get(`${process.env.REACT_APP_IP}${endpoint}`);
-          
-          if (selectedTag === 'brand') {
-            setModuleData(response.data.data.brand_list || []);
-            setLoader(false);
-          } else if (selectedTag === 'category') {
-            setLoader(false);
-            setModuleData(response.data.data.category_levels || []);
-            console.log(response.data.data.category_levels, 'response.data.data.category_levels');        
-          }
-        }
-       catch (error) {
-        setLoader(false);
-          console.error('Error fetching module data:', error);
-          Swal.fire('Error!', 'An error occurred while fetching data. Please try again.', 'error');
-        } finally {
-          setLoading(false);
-        }
-      };
+      } catch (error) {
+        console.error('Error adding attribute group:', error);
+        Swal.fire('Error!', 'An error occurred while adding the attribute group. Please try again.', 'error');
+      }
+    },
+  });
+};
+   const fetchModuleData = async () => {
+  if (!selectedTag) return;
+  setLoader(true);
+  setLoading(true);
+  let endpoint = '';
+
+  switch (selectedTag) {
+    case 'brand':
+      endpoint = '/obtainBrand/?search=';
+      break;
+    case 'category':
+      endpoint = '/obtainCategory/?search=';
+      break;
+    default:
+      setModuleData([]);
+      setLoading(false);
+      setLoader(false);
+      return;
+  }
+
+  try {
+    const response = await axiosInstance.get(`${process.env.REACT_APP_IP}${endpoint}`);
+    
+    if (selectedTag === 'brand') {
+      // Fix: Change from response.data.data.brand_list to response.data.brand_list
+      setModuleData(response.data.brand_list || []);
+      setLoader(false);
+    } else if (selectedTag === 'category') {
+      setLoader(false);
+      // Fix: Change from response.data.data.category_levels to response.data.category_levels
+      setModuleData(response.data.category_levels || []);
+      console.log(response.data.category_levels, 'response.data.category_levels');        
+    }
+  } catch (error) {
+    setLoader(false);
+    console.error('Error fetching module data:', error);
+    Swal.fire('Error!', 'An error occurred while fetching data. Please try again.', 'error');
+    setModuleData([]); // Set empty array on error
+  } finally {
+    setLoading(false);
+  }
+};
       
       const handleAddBrand = async (attributeName, module_id) => {
         console.log(module_id, 'module_id'); // Checking the module_id being passed
@@ -341,27 +383,26 @@ const Attribute = ({ isSidebarOpen, toggleSidebar }) => {
             console.log('Selected Category IDs:', selectedCategoryIds); // You can now use this variable to process the selected IDs
       
             // API Call to create the attribute
-            try {
-              const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/createAttribute/`, {
-                module_id: selectedCategoryIds,
-                module_name: selectedTag, // Dynamically set based on selectedTag (brand/category)
-                name: attributeName,
-              });
+             try {
+      const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/createAttribute/`, {
+        module_id: selectedCategoryIds,
+        module_name: selectedTag,
+        name: attributeName,
+      });
       
-              if (response.data.data.is_created === true) {
-                Swal.fire('Success!', 'Category updated successfully.', 'success');
-                fetchAttributeData(selectedTag); // Call API with the selected tag
-              } else if (response.data.data.is_created === false) {
-                Swal.fire('Warning!', 'This attribute is already present.', 'warning');
-              } else {
-                Swal.fire('Error!', 'There was an error updating the categories. Please try again.', 'error');
-              }
-              // Handle the response, for example, show success message
-              console.log('API Response:', response.data);
-            } catch (error) {
-              console.error('Error creating attribute:', error);
-              Swal.fire('Error!', 'There was an error creating the attribute. Please try again.', 'error');
-            }
+               if (response.data && response.data.is_created === true) {
+        Swal.fire('Success!', 'Category updated successfully.', 'success');
+        fetchAttributeData(selectedTag);
+      } else if (response.data && response.data.is_created === false) {
+        Swal.fire('Warning!', 'This attribute is already present.', 'warning');
+      } else {
+        Swal.fire('Error!', 'There was an error updating the categories. Please try again.', 'error');
+      }
+      console.log('API Response:', response.data);
+    } catch (error) {
+      console.error('Error creating attribute:', error);
+      Swal.fire('Error!', 'There was an error creating the attribute. Please try again.', 'error');
+    }
           },
         });
       };
@@ -397,20 +438,16 @@ const Attribute = ({ isSidebarOpen, toggleSidebar }) => {
           new:newValue,
         });
   
-        if (response.data.data.is_created === true) {
-          fetchAttributeData(moduleName);
-          // If the value is successfully added, update the UI
-          Swal.fire('Success!', 'New value added successfully.', 'success');
-          // Optionally, you can update the attribute values here
-          // For example, call a function to update the state or reload attributes.
-        } else if (response.data.data.is_created === false) {
-                        Swal.fire({ title: 'Warning!', text: 'This attribute value is already present.', icon: 'warning', confirmButtonText: 'OK'  });          
-                        //  fetchAttributes();
-                    }
-      } catch (error) {
-        console.error('Error adding value:', error);
-        Swal.fire('Error!', 'There was an issue adding the value. Please try again later.', 'error');
-      }
+      if (response.data && response.data.is_created === true) {
+      fetchAttributeData(moduleName);
+      Swal.fire('Success!', 'New value added successfully.', 'success');
+    } else if (response.data && response.data.is_created === false) {
+      Swal.fire({ title: 'Warning!', text: 'This attribute value is already present.', icon: 'warning', confirmButtonText: 'OK' });          
+    }
+  } catch (error) {
+    console.error('Error adding value:', error);
+    Swal.fire('Error!', 'There was an issue adding the value. Please try again later.', 'error');
+  }
     }
   };
   
@@ -440,16 +477,16 @@ const Attribute = ({ isSidebarOpen, toggleSidebar }) => {
         console.log(response, 'response');
   
         // If visibility is updated successfully
-        if (response.data.data.is_update  === true) {
-          fetchAttributeData(selectedTag);
-          Swal.fire('Success!', 'Visibility updated successfully.', 'success');
-        } else {
-          Swal.fire('Oops!', 'Visibility update failed.', 'error');
-        }
-      } catch (error) {
-        console.error("Error updating visibility:", error);
-        Swal.fire('Error!', 'Something went wrong while updating visibility.', 'error');
-      }
+   if (response.data && response.data.is_update === true) {
+      fetchAttributeData(selectedTag);
+      Swal.fire('Success!', 'Visibility updated successfully.', 'success');
+    } else {
+      Swal.fire('Oops!', 'Visibility update failed.', 'error');
+    }
+  } catch (error) {
+    console.error("Error updating visibility:", error);
+    Swal.fire('Error!', 'Something went wrong while updating visibility.', 'error');
+  }
     } else {
       // If the user cancels, no changes will be made
       console.log('Visibility update cancelled.');
@@ -985,158 +1022,151 @@ const handleExport = async () => {
           <th>S.No</th>
           <th>Name</th>
           <th>Type</th>
-          <th>Values</th> {/* New column for values */}
+          <th>Values</th>
           {selectedTag !== 'global' && <th>Applicable Module</th>}
-          <th>Action</th> {/* Action column */}
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
-      {attributes.length === 0 ? (
-                  <tr>
-                     {loader && (
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                      Loading attributes
-                    </td>
-                  )}
-                    {!loader && (
-                      <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                        No attributes found
-                      </td>
-                    )}
-                  </tr>
-                ) : (
-      attributes.map((attribute, index) => (
-          <tr key={attribute.id}>
-            <td>{index + 1}</td> {/* Session No - based on row number */}
-            <td>{attribute.name}</td>
-            <td>{attribute.type}</td>
-            <td>
-              {/* Render the values as tags */}
-              {attribute.values && attribute.values.length > 0 ? (
-                attribute.values.map((value, valueIndex) => (
-                  <span
-                    key={valueIndex}
-                    style={{
-                      backgroundColor: '#e2e2e2',
-                      padding: '5px 10px',
-                      margin: '5px',
-                      borderRadius: '5px',
-                      fontSize: '13px',
-                      display: 'inline-block'
-                    }}
-                  >
-                    {value}
-                  </span>
-                ))
-              ) : (
-                <span>No values</span> // If no values exist
-              )}
-              <button
-                type="button"
-                className="add-groupcategory-btn"
-                onClick={() => {
-                  // Collect all module ids into a list
-                  const moduleIds = attribute.module_name.map(module => module.id);
-                  // Send the list of module ids along with the attribute name
-                  handleAddValue(attribute.name, moduleIds); // Pass attribute name and list of module ids
-                }}
-                style={{
-                  backgroundColor: '#e2e2e2',
-                  color: 'black',
-                  border: 'none',
-                  padding: '4px 7px',
-                  borderRadius: '15px',
-                  cursor: 'pointer',
-                  marginLeft: '10px', // Space between values and button
-                }}
-              >
-                +
-              </button>
-            </td>
-            {selectedTag !== 'global' && (
-            <td>
-              {/* Render module names as tags */}
-              {attribute.module_name && attribute.module_name.length > 0 ? (
-                attribute.module_name.map((module, moduleIndex) => (
-                  <span
-                    key={moduleIndex}
-                    style={{
-                      backgroundColor: '#e2e2e2',
-                      padding: '5px 10px',
-                      margin: '5px',
-                      borderRadius: '5px',
-                      fontSize: '13px',
-                      display: 'inline-block'
-                    }}
-                  >
-                    {module.name}
-                  </span>
-                ))
-              ) : (
-                <span>No modules</span> // If no modules exist
-              )}
-              <button
-                type="button"
-                className="add-groupcategory-btn"
-                onClick={() => {
-                  // Collect all module ids into a list
-                  const moduleIds = attribute.module_name.map(module => module.id);
-                  // Send the list of module ids along with the attribute name
-                  handleAddBrand(attribute.name, moduleIds); // Pass attribute name and list of module ids
-                }}
-                style={{
-                  backgroundColor: '#e2e2e2',
-                  color: 'black',
-                  border: 'none',
-                  padding: '4px 7px',
-                  borderRadius: '15px',
-                  cursor: 'pointer',
-                  marginLeft: '10px', // Space between values and button
-                }}
-              >
-                +
-              </button>
-            </td>
-          )}
-           <td>
-      {/* Display Material UI icons for visibility */}
-      <span
-        style={{
-          cursor: 'pointer',
-          display: 'inline-block',
-          transition: 'transform 0.3s',
-        }}
-        onClick={() => handleVisibilityToggle(attribute.id, attribute.is_visible)}
-        className={`visibility-icon ${attribute.is_visible ? 'active' : 'inactive'}`}
-      >
-        {attribute.is_visible ? (
-          <>
-            <Visibility
-              style={{
-                color: '#9400cc',
-              }}
-              title="Visible"
-              className="visibility-icon-active"
-            />
-            <span className="status-text">Active</span>
-          </>
-        ) : (
-          <>
-            <VisibilityOff
-              style={{
-                color: 'red',
-              }}
-              title="Not Visible"
-              className="visibility-icon-inactive"
-            />
-            <span className="status-text inactivetext">Inactive</span>
-          </>
-        )}
-      </span>
-    </td>
+        {attributes.length === 0 ? (
+          <tr>
+            {loader && (
+              <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
+                Loading attributes
+              </td>
+            )}
+            {!loader && (
+              <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
+                No attributes found
+              </td>
+            )}
           </tr>
-        ))
-      )}
+        ) : (
+          attributes.map((attribute, index) => (
+            <tr key={attribute.id}>
+              <td>{index + 1}</td>
+              <td>{attribute.name}</td>
+              <td>{attribute.type}</td>
+              <td>
+                {attribute.values && attribute.values.length > 0 ? (
+                  attribute.values.map((value, valueIndex) => (
+                    <span
+                      key={valueIndex}
+                      style={{
+                        backgroundColor: '#e2e2e2',
+                        padding: '5px 10px',
+                        margin: '5px',
+                        borderRadius: '5px',
+                        fontSize: '13px',
+                        display: 'inline-block'
+                      }}
+                    >
+                      {value}
+                    </span>
+                  ))
+                ) : (
+                  <span>No values</span>
+                )}
+            <button
+  type="button"
+  className="add-groupcategory-btn"
+  onClick={() => {
+    const moduleIds = attribute.module_name?.map(module => module.id) || [];
+    handleAddValue(attribute.name, moduleIds);
+  }}
+  style={{
+    backgroundColor: '#e2e2e2',
+    color: 'black',
+    border: 'none',
+    padding: '4px 7px',
+    borderRadius: '15px',
+    cursor: 'pointer',
+    marginLeft: '10px',
+  }}
+>
+  +
+</button>
+              </td>
+              {selectedTag !== 'global' && (
+                <td>
+                  {attribute.module_name && attribute.module_name.length > 0 ? (
+                    attribute.module_name.map((module, moduleIndex) => (
+                      <span
+                        key={moduleIndex}
+                        style={{
+                          backgroundColor: '#e2e2e2',
+                          padding: '5px 10px',
+                          margin: '5px',
+                          borderRadius: '5px',
+                          fontSize: '13px',
+                          display: 'inline-block'
+                        }}
+                      >
+                        {module.name}
+                      </span>
+                    ))
+                  ) : (
+                    <span>No modules</span>
+                  )}
+         <button
+  type="button"
+  className="add-groupcategory-btn"
+  onClick={() => {
+    const moduleIds = attribute.module_name?.map(module => module.id) || [];
+    handleAddBrand(attribute.name, moduleIds);
+  }}
+  style={{
+    backgroundColor: '#e2e2e2',
+    color: 'black',
+    border: 'none',
+    padding: '4px 7px',
+    borderRadius: '15px',
+    cursor: 'pointer',
+    marginLeft: '10px',
+  }}
+>
+  +
+</button>
+                </td>
+              )}
+              <td>
+                <span
+                  style={{
+                    cursor: 'pointer',
+                    display: 'inline-block',
+                    transition: 'transform 0.3s',
+                  }}
+                  onClick={() => handleVisibilityToggle(attribute.id, attribute.is_visible)}
+                  className={`visibility-icon ${attribute.is_visible ? 'active' : 'inactive'}`}
+                >
+                  {attribute.is_visible ? (
+                    <>
+                      <Visibility
+                        style={{
+                          color: '#9400cc',
+                        }}
+                        title="Visible"
+                        className="visibility-icon-active"
+                      />
+                      <span className="status-text">Active</span>
+                    </>
+                  ) :(
+                    <>
+                      <VisibilityOff
+                        style={{
+                          color: 'red',
+                        }}
+                        title="Not Visible"
+                        className="visibility-icon-inactive"
+                      />
+                      <span className="status-text inactivetext">Inactive</span>
+                    </>
+                  )}
+                </span>
+              </td>
+            </tr>
+          ))
+        )}
       </tbody>
     </table>
   </div>

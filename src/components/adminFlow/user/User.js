@@ -39,42 +39,51 @@ useEffect(() => {
   useEffect(() => {
     fetchsortOrderUser();
   }, [sortAscUser]);
-  const fetchsortOrder = async () => {
+
+const fetchsortOrder = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(
-        `${process.env.REACT_APP_IP}/obtainClientUser/?sort_by=is_active&sort=${sortAsc}&&search=`,
-      );
-      setUsers(response.data.data.user_list || []);
+        const response = await axiosInstance.get(
+            `${process.env.REACT_APP_IP}/obtainClientUser/?sort_by=is_active&sort=${sortAsc}&&search=`,
+        );
+        console.log('Sort order API Response:', response.data); // Debug log
+        setUsers(response.data.user_list || []); // Remove the extra .data layer
     } catch (error) {
-      console.error('Error fetching clients:', error);
+        console.error('Error fetching clients:', error);
     }
     setLoading(false);
-  };
-  const fetchsortOrderRole = async () => {
+};
+
+const fetchsortOrderRole = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(
-        `${process.env.REACT_APP_IP}/obtainClientUser/?sort_by=role&sort=${sortAscRole}&&search=`,
-      );
-      setUsers(response.data.data.user_list || []);
+        const response = await axiosInstance.get(
+            `${process.env.REACT_APP_IP}/obtainClientUser/?sort_by=role&sort=${sortAscRole}&&search=`,
+        );
+        console.log('Sort order role API Response:', response.data); // Debug log
+        setUsers(response.data.user_list || []); // Remove the extra .data layer
     } catch (error) {
-      console.error('Error fetching clients:', error);
+        console.error('Error fetching clients:', error);
     }
     setLoading(false);
-  };
-  const fetchsortOrderUser = async () => {
+};
+
+
+const fetchsortOrderUser = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(
-        `${process.env.REACT_APP_IP}/obtainClientUser/?sort_by=user_name&&sort=${sortAscUser}&&search=`,
-      );
-      setUsers(response.data.data.user_list || []);
+        const response = await axiosInstance.get(
+            `${process.env.REACT_APP_IP}/obtainClientUser/?sort_by=user_name&&sort=${sortAscUser}&&search=`,
+        );
+        console.log('Sort order user API Response:', response.data); // Debug log
+        setUsers(response.data.user_list || []); // Remove the extra .data layer
     } catch (error) {
-      console.error('Error fetching clients:', error);
+        console.error('Error fetching clients:', error);
     }
     setLoading(false);
-  };
+};
+
+
   const toggleSort = () => {
     setSortAsc((prev) => !prev);
   };
@@ -111,48 +120,52 @@ useEffect(() => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const fetchUsers = async (searchQuery = "") => {
+
+
+const fetchUsers = async (searchQuery = "") => {
     setLoading(true);
     try {
-      const endpoint =
-      userRole === 'admin'
-        ? 'obtainClientUser'
-        : userRole === 'superadmin'
-        ? 'obtainClientForAdmin'
-        : null;
+        const endpoint =
+            userRole === 'admin'
+                ? 'obtainClientUser'
+                : userRole === 'superadmin'
+                ? 'obtainClientForAdmin'
+                : null;
 
-    if (!endpoint) {
-      console.warn("Unknown user role, cannot fetch data.");
-      setLoading(false);
-      return;
-    }
+        if (!endpoint) {
+            console.warn("Unknown user role, cannot fetch data.");
+            setLoading(false);
+            return;
+        }
+ const response = await axiosInstance.get(
+            `${process.env.REACT_APP_IP}/${endpoint}/`,
+            {
+                params: {
+                    search: searchQuery,
+                },
+            }
+        );
+        console.log('Fetch users API Response:', response.data); // Debug log
+        
+        if (response.status === 401) {
+            setUnauthorized(true);
+        } 
+        
+        const userData =  
+     userRole === 'admin'
+                ? response?.data?.user_list // Remove the extra .data layer
+                : response?.data?.client_list; // Remove the extra .data layer
 
-    const response = await axiosInstance.get(
-      `${process.env.REACT_APP_IP}/${endpoint}/`,
-      {
-        params: {
-          search: searchQuery,
-        },
-      }
-    );
-    if (response.status === 401) {
-      setUnauthorized(true);
-    } 
-    const userData =
-    userRole === 'admin'
-      ? response?.data?.data?.user_list
-      : response?.data?.data?.client_list;
-
-  setUsers(userData || []);
+        setUsers(userData || []);
         setLoading(false);
     } catch (error) {
-      setLoading(false);
-      if (error.status === 401) {
-        setUnauthorized(true);
-      }
-      console.error("Error fetching users", error);
+        setLoading(false);
+        if (error.response?.status === 401) { // Use error.response?.status instead of error.status
+            setUnauthorized(true);
+        }
+        console.error("Error fetching users", error);
     }
-  };
+};
   if (unauthorized) {
     navigate(`/unauthorized`);
   }
@@ -174,33 +187,35 @@ useEffect(() => {
 
   };
 
-  const handleToggleStatus = async(user) => {
+ const handleToggleStatus = async(user) => {
     const dataToSend = {
-      is_active: !user.is_active, // Toggle the is_active status
-      id: user.id, // Send the vendorId as a separate field
-
+        is_active: !user.is_active, // Toggle the is_active status
+        id: user.id, // Send the vendorId as a separate field
     };
-  let update_obj = { update_obj: dataToSend };
-  try {
-    const response = await axiosInstance.post(
-      `${process.env.REACT_APP_IP}/updateClientUser/`,
-      update_obj,
-      {
-          headers: {
-            'Content-Type': 'application/json', // Ensuring the data is sent as JSON
-          },
+    let update_obj = { update_obj: dataToSend };
+    try {
+        const response = await axiosInstance.post(
+            `${process.env.REACT_APP_IP}/updateClientUser/`,
+            update_obj,
+            {
+                headers: {
+                    'Content-Type': 'application/json', // Ensuring the data is sent as JSON
+                },
+            }
+        );
+        console.log('Toggle status API Response:', response.data); // Debug log
+        
+        if (response.status === 200 || response.status === 201) {
+            fetchUsers(""); // Fetch all users again
+            Swal.fire('Success!', 'User status updated successfully.', 'success').then(() => {
+                navigate('/Admin/users');
+            });
         }
-    );
-    if (response.status === 200 || response.status === 201) {
-      fetchUsers(""); // Fetch all users again
-      Swal.fire('Success!', 'User status updated successfully.', 'success').then(() => {
-        navigate('/Admin/users');
-      });
+    } catch (error) {
+        console.error('Error updating user status:', error);
+        Swal.fire('Error!', 'Failed to update a user status. Please try again.', 'error');
     }
-  } catch (error) {
-    Swal.fire('Error!', 'Failed to update a user status. Please try again.', 'error');
-  }
-  };
+};
   return (
     <div>
     {loading && (

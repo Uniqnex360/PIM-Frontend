@@ -194,72 +194,79 @@ useEffect(() => {
         'font', 'size', 'header', 'bold', 'italic', 'underline', 'strike', 'color', 'background', 'script',
         'blockquote', 'code-block', 'list', 'bullet', 'indent', 'align', 'link', 'image', 'video', 'formula'
       ];
-      const handleAddAttribute = (event) => {
-        event.preventDefault();
-        // Initial value container to keep track of added attribute values
-        let attributeValues = [];
       
-        Swal.fire({
-          title: 'Add Attribute',
-          html: `
+const handleAddAttribute = (event) => {
+    event.preventDefault();
+    // Initial value container to keep track of added attribute values
+    let attributeValues = [];
+
+    Swal.fire({
+        title: 'Add Attribute',
+        html: `
             <div>
-              <input id="name" class="swal2-input" autocomplete="off" placeholder="Attribute name" style="margin: 0px 0px 10px 0px; font-size: 16px;width:100%;" required>
-              <select id="type" class="swal2-input select-back" style="margin: 0px 0px 10px 0px; font-size: 16px; border-color: #c5c5c5; border-radius: 3px; color:#c5c5c5;width:100%;">
-            <option value="text">Text</option>
-            <option value="integer">Integer</option>
-            <option value="decimal">Decimal</option>
-            <option value="boolean">Boolean</option>
-            <option value="multiselect">Multiselect</option>
-              </select>
+                <input id="name" class="swal2-input" autocomplete="off" placeholder="Attribute name" style="margin: 0px 0px 10px 0px; font-size: 16px;width:100%;" required>
+                <select id="type" class="swal2-input select-back" style="margin: 0px 0px 10px 0px; font-size: 16px; border-color: #c5c5c5; border-radius: 3px; color:#c5c5c5;width:100%;">
+                    <option value="text">Text</option>
+                    <option value="integer">Integer</option>
+                    <option value="decimal">Decimal</option>
+                    <option value="boolean">Boolean</option>
+                    <option value="multiselect">Multiselect</option>
+                </select>
                 <input id="attribute-value" class="swal2-input" autocomplete="off" placeholder="Enter attribute value" style="margin: 10px 0px 10px 0px; font-size: 16px;width: 100%;" />
                 <button id="add-value-btn" style="font-size: 16px; background-color: #a52be4; color: white;float: right;border-radius: 5px; padding: 8px 16px; border: none; cursor: pointer; margin-top: 10px;">
                 Add Value
-              </button>
+                </button>
                 <div id="added-values-tags" style="margin-top: 15px;"></div>
             </div>
-          `,
-          focusConfirm: false,
-          showCancelButton: true,
-          reverseButtons:true,
-          cancelButtonText: 'Cancel',
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        reverseButtons:true,
+        cancelButtonText: 'Cancel',
+
+
+
           preConfirm: async () => {
             const name = document.getElementById('name').value;
             const type = document.getElementById('type').value;
-      
+
             // Get all the attribute values
             const allValues = attributeValues;
-      
+
             // Validation check
             if (!name || !type || allValues.length === 0) {
-              Swal.showValidationMessage('Please fill all fields and add at least one attribute value');
-              return false;
+                Swal.showValidationMessage('Please fill all fields and add at least one attribute value');
+                return false;
             }
-      
+
             try {
-              // Sending data to API using axios
-              const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/createAttribute/`, {
-                name,
-                type,
-                module_id:[productId],
-                values: allValues,
-                module_name:'product', // Send the values as an array
-              });
-      
-              // Check the response from the API
-              if (response.data.data.is_created === true) {
-                Swal.fire('Success!', 'New attribute added successfully.', 'success');
-                fetchProductDetails();
-              } else if (response.data.data.is_created === false) {
-                Swal.fire({ title: 'Warning!', text: 'This attribute is already present.', icon: 'warning', confirmButtonText: 'OK'  });  fetchProductDetails();
-            }else {
-                Swal.fire('Error!', 'Failed to add the attribute. Please try again.', 'error');
-              }
+                // Sending data to API using axios
+                const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/createAttribute/`, {
+                    name,
+                    type,
+                    module_id:[productId],
+                    values: allValues,
+                    module_name:'product', // Send the values as an array
+                });
+
+                console.log('Create attribute API Response:', response.data); // Debug log
+                
+                // Check the response from the API
+                if (response.data.is_created === true) { // Remove the extra .data layer
+                    Swal.fire('Success!', 'New attribute added successfully.', 'success');
+                    fetchProductDetails();
+                } else if (response.data.is_created === false) { // Remove the extra .data layer
+                    Swal.fire({ title: 'Warning!', text: 'This attribute is already present.', icon: 'warning', confirmButtonText: 'OK'  });
+                    fetchProductDetails();
+                } else {
+                    Swal.fire('Error!', 'Failed to add the attribute. Please try again.', 'error');
+                }
             } catch (error) {
-              Swal.fire('Error!', 'An error occurred while adding the attribute. Please try again.', 'error');
-              console.error('Error adding attribute:', error);
+                Swal.fire('Error!', 'An error occurred while adding the attribute. Please try again.', 'error');
+                console.error('Error adding attribute:', error);
             }
-          },
-        });
+        },
+    });
       
         // Add a click event to the "Add Value" button
         document.getElementById('add-value-btn').addEventListener('click', () => {
@@ -307,60 +314,66 @@ useEffect(() => {
           }
         });
       };
-      const handleAddValue = async (attributeName) => {
-        // Show SweetAlert2 input pop-up
-        const { value: newValue } = await Swal.fire({
-          title: 'New Attribute Value',
-          input: 'text',
-          inputPlaceholder: 'Enter value',
-          showCancelButton: true,
-          confirmButtonText: 'Add',
-          cancelButtonText: 'Cancel',
-          reverseButtons:true,
-          inputAttributes: {
+
+   
+const handleAddValue = async (attributeName) => {
+    // Show SweetAlert2 input pop-up
+    const { value: newValue } = await Swal.fire({
+        title: 'New Attribute Value',
+        input: 'text',
+        inputPlaceholder: 'Enter value',
+        showCancelButton: true,
+        confirmButtonText: 'Add',
+        cancelButtonText: 'Cancel',
+        reverseButtons:true,
+        inputAttributes: {
             autocomplete: 'off' 
         },
-          inputValidator: (value) => {
+        inputValidator: (value) => {
             if (!value) {
-              return 'Please enter a value!';
+                return 'Please enter a value!';
             }
-          },
-        });
-      
-        if (newValue) {
-          try {
+        },
+    });
+
+    if (newValue) {
+        try {
             // Send the new value to the backend API
             const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/createAttribute/`, {
-              module_id: [productId],
-              module_name:'product',
-              name: attributeName,
-              new:newValue,
+                module_id: [productId],
+                module_name:'product',
+                name: attributeName,
+                new:newValue,
             });
-      
-            if (response.data.data.is_created === true) {
+
+            console.log('Add attribute value API Response:', response.data); // Debug log
+
+            if (response.data.is_created === true) { // Remove the extra .data layer
                 fetchProductDetails();
                 // If the value is successfully added, update the UI
-              Swal.fire('Success!', 'New value added successfully.', 'success');
-              // Optionally, you can update the attribute values here
-              // For example, call a function to update the state or reload attributes.
-            } else if (response.data.data.is_created === false) {
-                            Swal.fire({ title: 'Warning!', text: 'This attribute value is already present.', icon: 'warning', confirmButtonText: 'OK'  });                   fetchProductDetails();
-                        }
-          } catch (error) {
+                Swal.fire('Success!', 'New value added successfully.', 'success');
+                // Optionally, you can update the attribute values here
+                // For example, call a function to update the state or reload attributes.
+            } else if (response.data.is_created === false) { // Remove the extra .data layer
+                Swal.fire({ title: 'Warning!', text: 'This attribute value is already present.', icon: 'warning', confirmButtonText: 'OK'  });
+                fetchProductDetails();
+            }
+        } catch (error) {
             console.error('Error adding value:', error);
             Swal.fire('Error!', 'There was an issue adding the value. Please try again later.', 'error');
-          }
         }
-      };
-    
-    const fetchCategories = async () => {
-        try {
-            const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/obtainCategory/`, { level: 0 });
-            setCategories(response.data.data.category_levels);
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-        }
-    };
+    }
+};
+
+ const fetchCategories = async () => {
+    try {
+        const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/obtainCategory/`, { level: 0 });
+        console.log('Categories API Response:', response.data); // Debug log
+        setCategories(response.data.category_levels || []); // Remove the extra .data layer
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+    }
+};
        useEffect(() => {
             fetchCategories();
         }, []);
@@ -495,27 +508,29 @@ useEffect(() => {
         fetchCountries();
       }, []); 
     // Fetch product details on load
-    const fetchProductDetails = async () => {
-      setLoading(true);
-        try {
-            const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainProductDetails/?id=${productId}`);
-            const productData = response.data.data || {};
-            setFormData(productData);
-            setLoading(false)
-            setOriginalData(productData);
-            if (response.status === 401) {
-              setUnauthorized(true);
-            } 
-        } catch (error) {
-          setLoading(false);
-          if (error.status === 401) {
+
+const fetchProductDetails = async () => {
+    setLoading(true);
+    try {
+        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainProductDetails/?id=${productId}`);
+        console.log('Product details API Response:', response.data); // Debug log
+        const productData = response.data || {}; // Remove the extra .data layer
+        setFormData(productData);
+        setLoading(false)
+        setOriginalData(productData);
+        if (response.status === 401) {
             setUnauthorized(true);
-          }else{
+        } 
+    } catch (error) {
+        setLoading(false);
+        if (error.status === 401) {
+            setUnauthorized(true);
+        } else {
             console.error('Error fetching ProductDetails:', error);
             Swal.fire({ title: 'Error!', text: 'Failed to load ProductDetails.', icon: 'error', confirmButtonText: 'OK' });
-          }
         }
-    };
+    }
+};
     useEffect(() => {
         fetchProductDetails();
     }, [productId]);
@@ -562,37 +577,42 @@ useEffect(() => {
       );
   };
     // Fetch other dropdown data (vendors, categories, etc.)
-    useEffect(() => {
-        const fetchDropdownData = async () => {
-            try {
-                const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainVendor/?search=`);
-                setVendors(response.data.data.vendor_list || []);
-            } catch (error) {
-                console.error('Error fetching vendors:', error);
-            }
-            try {
-                const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainManufacture/`);
-                setManufacturers(response.data.data.manufacture_list || []);
-            } catch (error) {
-                console.error('Error fetching vendors:', error);
-            }
-            try {
-                const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainBrand/?search=`);
-                setBrands(response.data.data.brand_list || []);
-            } catch (error) {
-                console.error('Error fetching brands:', error);
-            }
+useEffect(() => {
+    const fetchDropdownData = async () => {
+        try {
+            const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainVendor/?search=`);
+            console.log('Vendors API Response:', response.data); // Debug log
+            setVendors(response.data.vendor_list || []); // Remove the extra .data layer
+        } catch (error) {
+            console.error('Error fetching vendors:', error);
+        }
+        try {
+            const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainManufacture/`);
+            console.log('Manufacturers API Response:', response.data); // Debug log
+            setManufacturers(response.data.manufacture_list || []); // Remove the extra .data layer
+        } catch (error) {
+            console.error('Error fetching manufacturers:', error);
+        }
+        try {
+            const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainBrand/?search=`);
+            console.log('Brands API Response:', response.data); // Debug log
+            setBrands(response.data.brand_list || []); // Remove the extra .data layer
+        } catch (error) {
+            console.error('Error fetching brands:', error);
+        }
 
-            try {
-                const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/obtainCategory/`, { level: 0 });
-                setCategories(response.data.data.category_levels || []);
-            } catch (error) {
-                console.error('Error fetching categories:', error);
-            }
-        };
+        try {
+            const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/obtainCategory/`, { level: 0 });
+            console.log('Categories API Response (dropdown):', response.data); // Debug log
+            setCategories(response.data.category_levels || []); // Remove the extra .data layer
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
+    };
 
-        fetchDropdownData();
-    }, []);
+    fetchDropdownData();
+}, []);
+
     const handleTextareaChange = (e, fieldName) => {
       const { name, value } = e.target;
       // If it's the first line and no bullet exists, prepend the bullet point
@@ -669,59 +689,62 @@ useEffect(() => {
           editor.style.minHeight = `${Math.max(100, height)}px`; // Set minHeight dynamically
         }
       };
-      const handleDeleteFile = async (type, index, fileName) => {
-        // Trigger a confirmation popup before deleting
-        Swal.fire({
-          title: 'Are you sure?',
-          text: `Do you want to delete this ${type}?`,
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#d33',
-          cancelButtonColor: '#3085d6',
-          reverseButtons:true,
-          confirmButtonText: 'Yes, delete it!',
-        }).then(async (result) => {
-          if (result.isConfirmed) {
+const handleDeleteFile = async (type, index, fileName) => {
+    // Trigger a confirmation popup before deleting
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you want to delete this ${type}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        reverseButtons:true,
+        confirmButtonText: 'Yes, delete it!',
+    }).then(async (result) => {
+        if (result.isConfirmed) {
             try {
-              // Make the POST request to delete the file from the backend
-              const response = await axiosInstance.get(
-                `${process.env.REACT_APP_IP}/removemedia/?name=${fileName}&&id=${productId}&&action=${type}`
-              );      
-              if (response.data.data.is_delete === true) {
-                // Update formData state based on the type of file being deleted
-                if (type === 'image') {
-                  setFormData((prevData) => ({
-                    ...prevData,
-                    image_list: prevData.image_list.filter((_, i) => i !== index), // Remove specific image from image_list
-                  }));
-                } else if (type === 'video') {
-                  setFormData((prevData) => ({
-                    ...prevData,
-                    video_list: prevData.video_list.filter((_, i) => i !== index), // Remove specific video from video_list
-                  }));
-                } else if (type === 'document') {
-                  setFormData((prevData) => ({
-                    ...prevData,
-                    attachment_list: prevData.attachment_list.filter((_, i) => i !== index), // Remove specific document from attachment_list
-                  }));
-                }
-                if (unsavedChanges === false) {
+                // Make the POST request to delete the file from the backend
+                const response = await axiosInstance.get(
+                    `${process.env.REACT_APP_IP}/removemedia/?name=${fileName}&&id=${productId}&&action=${type}`
+                );
+                
+                console.log('Delete file API Response:', response.data); // Debug log
+                
+                if (response.data.is_delete === true) { // Remove the extra .data layer
+                    // Update formData state based on the type of file being deleted
+                    if (type === 'image') {
+                        setFormData((prevData) => ({
+                            ...prevData,
+                            image_list: prevData.image_list.filter((_, i) => i !== index), // Remove specific image from image_list
+                        }));
+                    } else if (type === 'video') {
+                        setFormData((prevData) => ({
+                            ...prevData,
+                            video_list: prevData.video_list.filter((_, i) => i !== index), // Remove specific video from video_list
+                        }));
+                    } else if (type === 'document') {
+                        setFormData((prevData) => ({
+                            ...prevData,
+                            attachment_list: prevData.attachment_list.filter((_, i) => i !== index), // Remove specific document from attachment_list
+                        }));
+                    }
+                    if (unsavedChanges === false) {
+                        resetInputValue();
+                        fetchProductDetails();
+                    }
                     resetInputValue();
-                    fetchProductDetails();
+                    // Show success alert
+                    Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+                } else {
+                    Swal.fire('Error!', 'Failed to delete file.', 'error');
                 }
-                resetInputValue();
-                // Show success alert
-                Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
-              } else {
-                Swal.fire('Error!', 'Failed to delete file.', 'error');
-              }
             } catch (error) {
-              console.error('Error deleting file:', error);
-              Swal.fire('Error!', 'Failed to delete file.', 'error');
+                console.error('Error deleting file:', error);
+                Swal.fire('Error!', 'Failed to delete file.', 'error');
             }
-          }
-        });
-      };
+        }
+    });
+};
     
       const handleFileUpload = (e) => {
         const { files } = e.target;
@@ -758,116 +781,121 @@ useEffect(() => {
         });
         setUnsavedChanges(true);  // Mark that there are unsaved changes
       };
-      const handleFileUploadSubmit = async () => {
-        const formDataToSend = new FormData();
-      
-        // Append images, videos, and documents to FormData if available
-        if (formData.image_list && formData.image_list.length > 0) {
-          formData.image_list.forEach((file) => {
+     const handleFileUploadSubmit = async () => {
+    const formDataToSend = new FormData();
+
+    // Append images, videos, and documents to FormData if available
+    if (formData.image_list && formData.image_list.length > 0) {
+        formData.image_list.forEach((file) => {
             formDataToSend.append('images', file);
-          });
-        }
-        if (formData.video_list && formData.video_list.length > 0) {
-          formData.video_list.forEach((file) => {
+        });
+    }
+    if (formData.video_list && formData.video_list.length > 0) {
+        formData.video_list.forEach((file) => {
             formDataToSend.append('videos', file);
-          });
-        }
-        if (formData.attachment_list && formData.attachment_list.length > 0) {
-          formData.attachment_list.forEach((file) => {
+        });
+    }
+    if (formData.attachment_list && formData.attachment_list.length > 0) {
+        formData.attachment_list.forEach((file) => {
             formDataToSend.append('documents', file);
-          });
-        }
-        formDataToSend.append('id', formData.id);
-        // If there are any files selected, trigger the API request
-        if (formDataToSend.has('images') || formDataToSend.has('videos') || formDataToSend.has('documents')) {
-          setLoading(true);
-          try {
+        });
+    }
+    formDataToSend.append('id', formData.id);
+    // If there are any files selected, trigger the API request
+    if (formDataToSend.has('images') || formDataToSend.has('videos') || formDataToSend.has('documents')) {
+        setLoading(true);
+        try {
             const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/updateFilesIntoProduct/`, formDataToSend, {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
-      
-            if (response.data.data.is_upload === true) {
-              setInputStyle({
-                color: 'transparent', 
-                textAlign: 'center',
-                background: 'none',
-                cursor: 'pointer',
-              });
-              resetInputValue();
-              Swal.fire({
-                title: 'Success!',
-                text: 'Product updated successfully.',
-                icon: 'success',
-                confirmButtonText: 'OK',
-              });
-              fetchProductDetails();
-              setUnsavedChanges(false);
+
+            console.log('File upload API Response:', response.data); // Debug log
+
+            if (response.data.is_upload === true) { // Remove the extra .data layer
+                setInputStyle({
+                    color: 'transparent', 
+                    textAlign: 'center',
+                    background: 'none',
+                    cursor: 'pointer',
+                });
+                resetInputValue();
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Product updated successfully.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                });
+                fetchProductDetails();
+                setUnsavedChanges(false);
             } else {
-              Swal.fire({
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to update product.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                });
+            }
+        } catch (error) {
+             console.error('Error updating product:', error);
+            Swal.fire({
                 title: 'Error!',
                 text: 'Failed to update product.',
                 icon: 'error',
                 confirmButtonText: 'OK',
-              });
-            }
-          } catch (error) {
-            console.error('Error updating product:', error);
-            Swal.fire({
-              title: 'Error!',
-              text: 'Failed to update product.',
-              icon: 'error',
-              confirmButtonText: 'OK',
             });
-          } finally {
+        } finally {
             setLoading(false);
-          }
-        } else {
-          Swal.fire({
+        }
+    } else {
+        Swal.fire({
             title: 'No Files Selected!',
             text: 'Please select at least one file to upload.',
             icon: 'warning',
             confirmButtonText: 'OK',
-          });
-        }
-      };  
+        });
+    }
+};
     const handleSubmit = async (event) => { 
-        event.preventDefault();    
-         if (unsavedChanges === false) {
-              Swal.fire({
-                title: 'Info!',
-                text: 'No changes were made to save.',
-                icon: 'info',
-                confirmButtonText: 'OK',
-              });
-              return;
-            }
-            if (activeTab === 'images-videos') {
-              return;
-            }
-       if (!formData.name || !formData.sku || !formData.brand_id || formData.category_id.length === 0) {
-            // If required fields are missing, show an error
-            Swal.fire({ title: 'Error!', text: 'Please fill all required fields.', icon: 'error', confirmButtonText: 'OK' });
-        } else {
-          setEditMode({
+    event.preventDefault();    
+    if (unsavedChanges === false) {
+        Swal.fire({
+            title: 'Info!',
+            text: 'No changes were made to save.',
+            icon: 'info',
+            confirmButtonText: 'OK',
+        });
+        return;
+    }
+    if (activeTab === 'images-videos') {
+        return;
+    }
+    if (!formData.name || !formData.sku || !formData.brand_id || formData.category_id.length === 0) {
+        // If required fields are missing, show an error
+        Swal.fire({ title: 'Error!', text: 'Please fill all required fields.', icon: 'error', confirmButtonText: 'OK' });
+    } else {
+        setEditMode({
             short_description: false,
             personalized_short_description: false,
             long_description: false,
             personalized_long_description: false
-          });
-            // If no files are selected, submit regular product data without files
-            const productData = {
-                update_obj: {
-                    id: productId,// Assuming formData.id contains the product ID
-                    ...formData,  // Spread formData to include all updated fields
-                }
-            };
+        });
+        // If no files are selected, submit regular product data without files
+        const productData = {
+            update_obj: {
+                id: productId,// Assuming formData.id contains the product ID
+                ...formData,  // Spread formData to include all updated fields
+            }
+        };
     
             try {
-                const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/productUpdate/`, productData);
-                if (response.data.data.is_updated === true) {
-                  Swal.fire({
+            const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/productUpdate/`, productData);
+            
+            console.log('Product update API Response:', response.data); // Debug log
+            
+            if (response.data.is_updated === true) { // Remove the extra .data layer
+                Swal.fire({
                     title: 'Success!',
                     text: 'Product updated successfully.',
                     icon: 'success',
@@ -877,26 +905,26 @@ useEffect(() => {
                         overlay: 'swal-overlay'
                     },
                     willOpen: () => {
-                      // Apply the background color with transparency when the modal opens
-                      document.body.style.zIndex = '9999';
-                      document.body.style.overflow = 'hidden';  // Optional: Disable scrolling when the modal is open
-                  },
+                        // Apply the background color with transparency when the modal opens
+                        document.body.style.zIndex = '9999';
+                        document.body.style.overflow = 'hidden';  // Optional: Disable scrolling when the modal is open
+                    },
                     willClose: () => {
                         // Remove the blur effect when Swal modal is closed
                         document.body.style.filter = '';
                     }
                 });
-                                    fetchProductDetails();
-                    setUnsavedChanges(false); 
-                } else {
-                    Swal.fire({ title: 'Error!', text: 'Failed to update product.', icon: 'error', confirmButtonText: 'OK' });
-                }
-            } catch (error) {
-                console.error('Error updating product:', error);
+                fetchProductDetails();
+                setUnsavedChanges(false); 
+            } else {
                 Swal.fire({ title: 'Error!', text: 'Failed to update product.', icon: 'error', confirmButtonText: 'OK' });
             }
+        } catch (error) {
+            console.error('Error updating product:', error);
+            Swal.fire({ title: 'Error!', text: 'Failed to update product.', icon: 'error', confirmButtonText: 'OK' });
         }
-    };
+    }
+}; 
     const addVariant = () => {
         setFormData((prevData) => ({
             ...prevData,
@@ -926,21 +954,23 @@ useEffect(() => {
   const currentPage = queryParams.get('page') || 1;  // Get the current page from the query params
   navigate(`/Admin/products?page=${currentPage}`);
       };
-    const checkDuplicateCategory = async (categoryName) => {
-      if (!categoryName) return; 
-      try {
+    
+const checkDuplicateCategory = async (categoryName) => {
+    if (!categoryName) return; 
+    try {
         const response = await axiosInstance.get(
-          `${process.env.REACT_APP_IP}/findDuplicateCategory/?search=${encodeURIComponent(categoryName)}`
+            `${process.env.REACT_APP_IP}/findDuplicateCategory/?search=${encodeURIComponent(categoryName)}`
         );
-        if (response.data.data.error) {
-          setCategoryError("Category name must be unique within the same parent.");
+        console.log('Duplicate category API Response:', response.data); // Debug log
+        if (response.data.error) { // Remove the extra .data layer
+            setCategoryError("Category name must be unique within the same parent.");
         } else {
-          setCategoryError("");
+            setCategoryError("");
         }
-      } catch (error) {
+    } catch (error) {
         console.error("Error checking for duplicate category:", error);
-      }
-    }; 
+    }
+}; 
     const handleAddCategoryClick = (event) => {
         event.preventDefault();
         setIsAddCategoryPopupOpen(true);
@@ -972,21 +1002,23 @@ useEffect(() => {
         }
     };
     
-    const fetchParentCategories = async (inputValue) => {
-        if (!inputValue) return [];
-        try {
-            const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainCategoryList/?search=${inputValue}`);
-            const options = response.data.data.map(category => ({
-                id: category.id,
-                name: category.name,
-                level_str: category.level_str
-            }));
-            setSuggestions(options);
-        } catch (error) {
-            console.error('Error fetching parent categories:', error);
-            setSuggestions([]);
-        }
-    };
+const fetchParentCategories = async (inputValue) => {
+    if (!inputValue) return [];
+    try {
+        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainCategoryList/?search=${inputValue}`);
+        console.log('Parent categories API Response:', response.data); // Debug log
+        const options = response.data.map(category => ({ // Remove the extra .data layer
+            id: category.id,
+            name: category.name,
+            level_str: category.level_str
+        }));
+        setSuggestions(options);
+    } catch (error) {
+        console.error('Error fetching parent categories:', error);
+        setSuggestions([]);
+    }
+};
+
 
     const handleSearchChange = (event) => {
         const query = event.target.value;
@@ -1004,22 +1036,23 @@ useEffect(() => {
         setParentCategoryId("");
         setCategoryError("");
     };
-    const handleSuggestionSelect = async (suggestion) => {
-        setParentCategoryId(suggestion.id);
-        setSuggestions([]);
-        setSearchQuery(suggestion.name);
-        try {
-            const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/findDuplicateCategory/?search=${newCategoryName}&category_config_id=${suggestion.id}`);
-            if (response.data.data.error === true) {
-                setCategoryError('Category name must be unique within the same parent.');
-            }
-            else {
-                setCategoryError('');  // Clear error if no duplicate is found
-            }
-        } catch (error) {
-            console.error('Error checking for duplicate category with selected suggestion:', error);
+  const handleSuggestionSelect = async (suggestion) => {
+    setParentCategoryId(suggestion.id);
+    setSuggestions([]);
+    setSearchQuery(suggestion.name);
+    try {
+        const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/findDuplicateCategory/?search=${newCategoryName}&category_config_id=${suggestion.id}`);
+        console.log('Duplicate check with suggestion API Response:', response.data); // Debug log
+        if (response.data.error === true) { // Remove the extra .data layer
+            setCategoryError('Category name must be unique within the same parent.');
         }
-    };
+        else {
+            setCategoryError('');  // Clear error if no duplicate is found
+        }
+    } catch (error) {
+        console.error('Error checking for duplicate category with selected suggestion:', error);
+    }
+};
     // Render form based on active tab
     const handleCompanyChange = (selectedOption, index) => {
         const updatedRows = [...formData.category_group_list];
@@ -1035,20 +1068,23 @@ useEffect(() => {
           ]
         });
       };
-      const removeCategoryGroup = async (b2c_company_id) => {
-        try {
-            const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/removeCategoryGroup/`, {
+ const removeCategoryGroup = async (b2c_company_id) => {
+    try {
+        const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/removeCategoryGroup/`, {
             b2c_company_id,   // Company ID
             product_id:productId,
-          });
-          if (response.data.data.is_deleted === true) {
+        });
+        
+        console.log('Remove category group API Response:', response.data); // Debug log
+        
+        if (response.data.is_deleted === true) { // Remove the extra .data layer
             Swal.fire({ title: 'Success!', text: 'Category Removed Successfully.', icon: 'success', confirmButtonText: 'OK' });
-          }
-          console.log('Category group removed successfully:', response.data);
-        } catch (error) {
-          console.error('Error removing category group:', error);
         }
-      };
+        console.log('Category group removed successfully:', response.data);
+    } catch (error) {
+        console.error('Error removing category group:', error);
+    }
+};
       const removeRow = async (index, b2c_company_id) => {
         // Show confirmation dialog
         const { isConfirmed } = await Swal.fire({
@@ -1080,40 +1116,44 @@ useEffect(() => {
         setShowCategoryPopup(true);
       };
       
-      const addCategory = async () => {
-        if (!newCategoryName.trim()) {
-          Swal.fire('Error!', 'Category name cannot be empty.', 'error');
-          return;
-        }
-      
-        const row = formData.category_group_list[selectedRowIndex];
-        const b2c_company_id = row.b2c_company_id;
-      
-        try {
-          const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/updateCategoryGroup/`, {
+  const addCategory = async () => {
+    if (!newCategoryName.trim()) {
+        Swal.fire('Error!', 'Category name cannot be empty.', 'error');
+        return;
+    }
+
+    const row = formData.category_group_list[selectedRowIndex];
+    const b2c_company_id = row.b2c_company_id;
+
+    try {
+        const response = await axiosInstance.post(`${process.env.REACT_APP_IP}/updateCategoryGroup/`, {
             b2c_company_id,
             category_name: newCategoryName,
             product_id:productId,
-          });
-      
-          if (response.data.data.is_created === true) {
+        });
+
+        console.log('Add category API Response:', response.data); // Debug log
+
+        if (response.data.is_created === true) { // Remove the extra .data layer
             const updatedRows = [...formData.category_group_list];
             updatedRows[selectedRowIndex].category_levels.push({
-              id: response.data.category_id,
-              name: newCategoryName,
+                id: response.data.category_id,
+                name: newCategoryName,
             });
             Swal.fire({ title: 'Success!', text: 'Category Created Successfully.', icon: 'success', confirmButtonText: 'OK' });
             setFormData({ ...formData, category_group_list: updatedRows });
             setShowCategoryPopup(false);
             setNewCategoryName('');
-          } else {
+        } else {
             Swal.fire('Error!', 'Failed to add category.', 'error');
-          }
-        } catch (error) {
-          console.error('Error adding category:', error);
-          Swal.fire('Error!', 'Failed to add category.', 'error');
         }
-      };
+    } catch (error) {
+        console.error('Error adding category:', error);
+        Swal.fire('Error!', 'Failed to add category.', 'error');
+    }
+};
+
+
       if (unauthorized) {
         navigate(`/unauthorized`);
       }
