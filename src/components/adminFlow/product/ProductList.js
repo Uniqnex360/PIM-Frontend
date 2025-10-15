@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import './ProductList.css';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import { useNavigate, Link,useLocation } from 'react-router-dom';
@@ -19,6 +19,9 @@ import Snackbar from '@mui/material/Snackbar';
 import RefreshIcon from "@mui/icons-material/Refresh";
 import Unauthorized from "../../../Unauthorized";
 import CloseIcon from '@mui/icons-material/Close';
+// import { Checkbox, Chip, IconButton, Tooltip } from "@mui/material";
+// import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { styled } from '@mui/material/styles';
 const ProductList = ({ isSidebarOpen, toggleSidebar }) => {
   useEffect(() => {
           if (isSidebarOpen) {
@@ -58,7 +61,7 @@ const ProductList = ({ isSidebarOpen, toggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const sortChanged = useRef(false); // Tracking if sort option is changed
-  const itemsPerPage = 20; // Number of items per page
+  const itemsPerPage = 30; // Number of items per page
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const [productCount, setProductCounts] = useState([]);
     const [filterLetter, setFilterLetter] = useState(''); // State for letter filter
@@ -73,6 +76,191 @@ const ProductList = ({ isSidebarOpen, toggleSidebar }) => {
     }, []);
     let totalPages= Math.ceil(productCount / itemsPerPage);  // Calculate total pages based on brand count
     let currentProducts = products.slice(0, itemsPerPage);  // Get the products for the current page
+
+
+    // Add these new state variables after the existing state declarations
+const [showLeftFilters, setShowLeftFilters] = useState(false);
+const [leftFilterBrands, setLeftFilterBrands] = useState([]);
+const [leftFilterCategories, setLeftFilterCategories] = useState([]);
+
+const [expandedCategories, setExpandedCategories] = useState({});
+// ...existing code...
+
+
+
+  // Add styled components for better UI
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  borderRadius: '12px',
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+  border: '1px solid #e5e7eb',
+  backgroundColor: '#ffffff',
+  overflow: 'hidden', // Remove scroll
+  maxHeight: '70vh',
+  width: '100%', // Fixed width
+  '& .MuiTable-root': {
+    width: '100%', // Table takes full container width
+    tableLayout: 'fixed', // Fixed table layout for consistent column widths
+  },
+}));
+
+// Update the StyledTableHead
+const StyledTableHead = styled(TableHead)(({ theme }) => ({
+  backgroundColor: '#f8fafc',
+  '& .MuiTableCell-head': {
+    fontWeight: 500,
+    fontSize: '12px',
+    color: '#6b7280',
+    borderBottom: '1px solid #e5e7eb',
+    borderLeft: 'none',
+    borderRight: 'none',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    padding: '12px 8px', // Reduced horizontal padding
+    whiteSpace: 'nowrap',
+    background: '#f8fafc',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  }
+}));
+
+
+const LeftFilterPanel = styled('div')(({ theme }) => ({
+  position: 'fixed',
+  left: showLeftFilters ? '240px' : '-220px', // Start from after the sidebar (240px is the sidebar width)
+  top: '64px', // Start below the header/navbar
+  width: '220px', // Reduced width as discussed
+  height: 'calc(100vh - 64px)', // Full height minus header
+  backgroundColor: '#ffffff',
+  borderRight: '1px solid #e5e7eb',
+  boxShadow: '2px 0 10px rgba(0, 0, 0, 0.1)',
+  zIndex: 1100, // Higher than Material-UI sidebar (which is typically 1000-1050)
+  transition: 'left 0.3s ease-in-out',
+  overflowY: 'auto',
+  padding: '12px', // Reduced padding
+  '&::-webkit-scrollbar': {
+    width: '4px',
+  },
+  '&::-webkit-scrollbar-track': {
+    background: '#f1f1f1',
+  },
+  '&::-webkit-scrollbar-thumb': {
+    background: '#c1c1c1',
+    borderRadius: '2px',
+  },
+}));
+
+
+const FilterSection = styled('div')(({ theme }) => ({
+  marginBottom: '16px', // Reduced from 24px
+  '& h3': {
+    fontSize: '14px', // Reduced from 16px
+    fontWeight: 600,
+    color: '#374151',
+    marginBottom: '8px', // Reduced from 12px
+    borderBottom: '2px solid #a52be4',
+    paddingBottom: '4px', // Reduced from 8px
+  }
+}));
+
+const FilterItem = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '4px 0', // Reduced from 8px
+  cursor: 'pointer',
+  '&:hover': {
+    backgroundColor: '#f8fafc',
+    borderRadius: '4px',
+    padding: '4px 2px', // Reduced padding
+  },
+  '& input[type="checkbox"]': {
+    marginRight: '6px', // Reduced from 8px
+    accentColor: '#a52be4',
+    width: '12px', // Reduced from 16px
+    height: '12px', // Reduced from 16px
+  },
+  '& label': {
+    fontSize: '12px', // Reduced from 14px
+    color: '#374151',
+    cursor: 'pointer',
+    flex: 1,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+}));
+
+
+const CategoryTreeItem = styled('div')(({ level }) => ({
+  marginLeft: `${(level || 0) * 12}px`, // Reduced from 16px
+  '& .category-toggle': {
+    background: 'none',
+    border: 'none',
+    fontSize: '10px', // Reduced from 12px
+    cursor: 'pointer',
+    marginRight: '3px', // Reduced from 4px
+    color: '#6b7280',
+    width: '12px', // Reduced from 16px
+    height: '12px', // Reduced from 16px
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
+}));
+
+const FilterOverlay = styled('div')(({ theme }) => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: '100vw',
+  height: '100vh',
+  backgroundColor: 'rgba(0, 0, 0, 0.3)', // Lighter overlay
+  zIndex: 1099, // Just below the filter panel
+  display: showLeftFilters ? 'block' : 'none',
+}));
+
+
+
+
+
+// Update the StyledTableRow
+// Update the StyledTableRow
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:hover': {
+    backgroundColor: '#f8fafc',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s ease',
+  },
+  '&:not(:last-child)': {
+    borderBottom: '1px solid #f1f5f9',
+  },
+  '& .MuiTableCell-root': {
+    borderBottom: '1px solid #f1f5f9',
+    borderLeft: 'none',
+    borderRight: 'none',
+    padding: '12px 8px', // Reduced horizontal padding
+    verticalAlign: 'middle',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  }
+}));
+
+// Update the StyledTableCell
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  fontSize: '14px',
+  color: '#374151',
+  padding: '12px 8px', // Reduced horizontal padding
+  verticalAlign: 'middle',
+  borderLeft: 'none',
+  borderRight: 'none',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  '&.MuiTableCell-head': {
+    backgroundColor: '#f8fafc',
+    fontWeight: 500,
+  }
+}));
+
+
 const fetchBrands = async () => {
   try {
     const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainBrand/?search=`);
@@ -82,7 +270,25 @@ const fetchBrands = async () => {
     console.error('Error fetching brands', error);
   }
 };
-  
+// Removed duplicate processedProducts declaration
+
+
+// Update the processedProducts useMemo to include formatted price
+const processedProducts = useMemo(() => {
+  return currentProducts.map((product) => ({
+    ...product,
+    endLevelCategories: product.categories 
+      ? product.categories
+          .filter(cat => cat.is_end_level === true)
+          .map(cat => cat.name)
+          .join(', ')
+      : 'N/A',
+    formattedPrice: product.selling_price 
+      ? `$${parseFloat(product.selling_price).toFixed(2)}` 
+      : "N/A"
+  }));
+}, [currentProducts]);
+
   const fetchVendors = async () => {
   try {
    const response = await axiosInstance.get(`${process.env.REACT_APP_IP}/obtainVendor/?search=`);
@@ -175,6 +381,21 @@ const fetchProducts = async (sortOption, searchQuery = "", page = 1) => {
     fetchProducts("","",1); // Trigger API call with an empty search query
     setSearchOpen(false); // Close the search field
   };
+// ...existing code...
+useEffect(() => {
+  // Update the main filter states when left filter states change
+  setSelectedBrands([...leftFilterBrands]);
+  setSelectedCategories([...leftFilterCategories]);
+  
+  // Only fetch if there are filters or if we're clearing filters
+  if (leftFilterBrands.length > 0 || leftFilterCategories.length > 0 || 
+      selectedBrands.length > 0 || selectedCategories.length > 0) {
+    fetchProducts("", searchQuery, 1);
+  }
+}, [leftFilterBrands, leftFilterCategories]);
+// ...existing code...[leftFilterBrands, leftFilterCategories]);
+
+
 
   const pageFromUrl = parseInt(queryParams.get('page')) || 1; // Ensuring it's treated as an integer, default to 1 if invalid
   useEffect(() => {
@@ -295,7 +516,7 @@ const fetchProducts = async (sortOption, searchQuery = "", page = 1) => {
                         </div>
                         <!-- Download Icon and Hover Effect -->
                          <div class="download-icon-container" style="cursor: pointer;width: 0%;" id="downloadErrorList">
-                        <i class="fas fa-download" style="font-size: 24px; color: #923be3;float:right;" ></i>
+                        <i class="fas fa-download" style="font-size: 24px; color: #a52be4;float:right;" ></i>
                         <span class="download-text" >Download Error List</span>
                       </div>
                       </div>
@@ -581,7 +802,7 @@ const downloadErrorList = (errorList) => {
             Category${selectedexportCategories.length > 0 ? ` (${selectedexportCategories.length})` : ''}
           </button>
           <!-- Add Refresh Icon after Category -->
-          <button id="refresh-btn" class="filter-tab" style="padding: 5px 10px; border: none; cursor: pointer; background: #28a745; color: white; border-radius: 4px;">
+          <button id="refresh-btn" class="filter-tab" style="padding: 5px 10px; border: none; cursor: pointer; background: #a52be4; color: white; border-radius: 4px;">
             <i class="fa fa-refresh" style="font-size: 16px;color: grey;"></i> 
           </button>
         </div>
@@ -776,32 +997,343 @@ const downloadErrorList = (errorList) => {
         setLoading(false);
     }
 };
+
+// ...existing code...
 const handleFilterClick = () => {
   Swal.fire({
-    title: 'Filter By',
+    title: '<div style="display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; color: #333;">Filter Products By</div>',
     html: `
-      <div class="filter-tags" style="display: flex; gap: 10px; margin-bottom: 10px;">
-        <button id="brand-btn" class="filter-tab active" style="padding: 5px 10px; border: none; cursor: pointer; background: #a52be4; color: white; border-radius: 4px;">Brand${selectedBrands.length > 0 ? ` (${selectedBrands.length})` : ''}</button>
-        <button id="vendor-btn" class="filter-tab" style="padding: 5px 10px; border: none; cursor: pointer; background: #6c757d; color: white; border-radius: 4px;">Vendor${selectedVendors.length > 0 ? ` (${selectedVendors.length})` : ''}</button>
-        <button id="category-btn" class="filter-tab" style="padding: 5px 10px; border: none; cursor: pointer; background: #6c757d; color: white; border-radius: 4px;">Category${selectedCategories.length > 0 ? ` (${selectedCategories.length})` : ''}</button>
+<div style="background: #f8f9fa; padding: 8px; border-radius: 10px; margin: -8px;">
+        <!-- Filter Tabs -->
+        <div class="filter-tabs" style="
+          display: flex; 
+          gap: 3px; 
+          margin-bottom: 6px;
+          background: white;
+          padding: 2px;
+          border-radius: 6px;
+          border: 1px solid #e0e0e0;
+        ">
+          <button id="brand-btn" class="filter-tab active" style="
+            flex: 1;
+            padding: 4px 8px; 
+            border: 1px solid #333; 
+            cursor: pointer; 
+            background: white; 
+            color: #333; 
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 10px;
+            transition: all 0.3s ease;
+          ">
+            Brands${selectedBrands.length > 0 ? ` (${selectedBrands.length})` : ''}
+          </button>
+          
+          <button id="vendor-btn" class="filter-tab" style="
+            flex: 1;
+            padding: 4px 8px; 
+            border: 1px solid #e0e0e0; 
+            cursor: pointer; 
+            background: white; 
+            color: #666; 
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 10px;
+            transition: all 0.3s ease;
+          ">
+            Vendors${selectedVendors.length > 0 ? ` (${selectedVendors.length})` : ''}
+          </button>
+          
+          <button id="category-btn" class="filter-tab" style="
+            flex: 1;
+            padding: 4px 8px; 
+            border: 1px solid #e0e0e0; 
+            cursor: pointer; 
+            background: white; 
+            color: #666; 
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 10px;
+            transition: all 0.3s ease;
+          ">
+            Categories${selectedCategories.length > 0 ? ` (${selectedCategories.length})` : ''}
+          </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div style="margin-bottom: 5px; position: relative;">
+          <input 
+            type="text" 
+            id="filter-search" 
+            placeholder="Search..." 
+            style="
+              width: 100%; 
+              padding: 6px 10px; 
+              border: 1px solid #ddd; 
+              border-radius: 15px; 
+              font-size: 11px;
+              background: white;
+              transition: all 0.3s ease;
+              outline: none;
+              box-sizing: border-box;
+            "
+          />
+        </div>
+
+        <!-- Filter Content Area -->
+        <div id="filter-content" class="filter-content" style="
+          min-height: 140px;
+          max-height: 180px; 
+          overflow-y: auto; 
+          border: 1px solid #ddd; 
+          border-radius: 6px; 
+          padding: 4px; 
+          background: white;
+          text-align: left;
+        "></div>
+
+        <!-- Selected Summary -->
+        <div id="selected-summary" style="
+          margin-top: 5px; 
+          padding: 6px 10px; 
+          background: linear-gradient(135deg, #a52be4 0%, #8e44ad 100%);
+          border-radius: 6px; 
+          color: white;
+          text-align: center;
+          display: none;
+          font-size: 11px;
+          font-weight: 500;
+        ">
+          <span id="summary-text"></span>
+        </div>
       </div>
-      <div id="filter-content" class="filter-content" style="max-height: 230px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 7px 10px 4px 0px; text-align: left;"></div>
+
+      <style>
+        .filter-tab:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+          background: #f8f9fa !important;
+        }
+        
+        .filter-tab.active {
+          background: white !important;
+          color: #333 !important;
+          border: 1px solid #333 !important;
+          box-shadow: 0 2px 4px rgba(51, 51, 51, 0.2) !important;
+        }
+        
+        .filter-item {
+          padding: 4px 6px;
+          margin-bottom: 3px;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+          border: 1px solid transparent;
+          cursor: pointer;
+        }
+        
+        .filter-item:hover {
+          background-color: #f8f9fa;
+          border-color: #333;
+          transform: translateX(2px);
+        }
+        
+        .filter-item label {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          font-weight: 500;
+          color: #333;
+          margin: 0;
+          font-size: 12px;
+        }
+        
+        .filter-checkbox {
+          width: 12px;
+          height: 12px;
+          margin-right: 6px;
+          accent-color: #333;
+          cursor: pointer;
+        }
+        
+        #filter-search:focus {
+          border-color: #333;
+          box-shadow: 0 0 0 1px rgba(51, 51, 51, 0.1);
+        }
+        
+        .category-item {
+          border-left: 2px solid #e0e0e0;
+          padding-left: 6px;
+          margin-bottom: 3px;
+        }
+        
+        .toggle-expand {
+          background: #333;
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 14px;
+          height: 14px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 9px;
+          font-weight: bold;
+          margin-right: 5px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        
+        .toggle-expand:hover {
+          background: #555;
+          transform: scale(1.05);
+        }
+        
+        /* Custom scrollbar */
+        .filter-content::-webkit-scrollbar {
+          width: 3px;
+        }
+        
+        .filter-content::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 3px;
+        }
+        
+        .filter-content::-webkit-scrollbar-thumb {
+          background: #888;
+          border-radius: 3px;
+        }
+        
+        .filter-content::-webkit-scrollbar-thumb:hover {
+          background: #666;
+        }
+      </style>
     `,
     showCancelButton: true,
-    cancelButtonText: 'Close',
+    cancelButtonText: 'Cancel',
     confirmButtonText: 'Apply',
-    reverseButtons: true,
+    reverseButtons: false,
+    width: '350px',
+    padding: '4px',
+    background: '#f8f9fa',
+    customClass: {
+      popup: 'modern-filter-popup',
+      confirmButton: 'modern-confirm-btn',
+      cancelButton: 'modern-cancel-btn'
+    },
     didOpen: () => {
-      document.getElementById('brand-btn').addEventListener('click', () => switchTab('brand'));
-      document.getElementById('vendor-btn').addEventListener('click', () => switchTab('vendor'));
-      document.getElementById('category-btn').addEventListener('click', () => switchTab('category'));
-      switchTab('brand'); // Default tab
+      // Style buttons
+      const confirmBtn = document.querySelector('.modern-confirm-btn');
+      const cancelBtn = document.querySelector('.modern-cancel-btn');
+      
+      if (confirmBtn) {
+        confirmBtn.style.cssText = `
+          background: linear-gradient(135deg, #a52be4 0%, #8e44ad 100%) !important;
+          border: none !important;
+          padding: 6px 14px !important;
+          border-radius: 18px !important;
+          font-weight: 600 !important;
+          color: white !important;
+          font-size: 11px !important;
+          transition: all 0.3s ease !important;
+        `;
+      }
+      
+      if (cancelBtn) {
+        cancelBtn.style.cssText = `
+          background: #6c757d !important;
+          border: none !important;
+          padding: 6px 14px !important;
+          border-radius: 18px !important;
+          font-weight: 600 !important;
+          color: white !important;
+          font-size: 11px !important;
+          transition: all 0.3s ease !important;
+        `;
+      }
+
+      // Initialize variables
+      let currentFilterType = 'brand';
+      
+      // Tab switching function
+      function switchTab(type) {
+        currentFilterType = type;
+        
+        // Update tab styles
+        document.querySelectorAll('.filter-tab').forEach(button => {
+          button.style.background = 'white';
+          button.style.color = '#666';
+          button.style.border = '1px solid #e0e0e0';
+          button.style.boxShadow = 'none';
+          button.classList.remove('active');
+        });
+        
+        const activeBtn = document.getElementById(`${type}-btn`);
+        activeBtn.style.background = 'white';
+        activeBtn.style.color = '#333';
+        activeBtn.style.border = '1px solid #333';
+        activeBtn.style.boxShadow = '0 2px 4px rgba(51, 51, 51, 0.2)';
+        activeBtn.classList.add('active');
+        
+        loadList(type);
+        updateSelectedSummary();
+        
+        // Clear search
+        const searchInput = document.getElementById('filter-search');
+        if (searchInput) searchInput.value = '';
+      }
+      
+      // Search functionality
+      function setupSearch() {
+        const searchInput = document.getElementById('filter-search');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('.filter-item');
+            
+            items.forEach(item => {
+              const text = item.textContent.toLowerCase();
+              item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+          });
+        }
+      }
+      
+      // Update selected summary
+      function updateSelectedSummary() {
+        const summary = document.getElementById('selected-summary');
+        const summaryText = document.getElementById('summary-text');
+        
+        if (!summary || !summaryText) return;
+        
+        const totalSelected = selectedBrands.length + selectedVendors.length + selectedCategories.length;
+        
+        if (totalSelected > 0) {
+          summary.style.display = 'block';
+          let parts = [];
+          if (selectedBrands.length > 0) parts.push(`${selectedBrands.length} Brand(s)`);
+          if (selectedVendors.length > 0) parts.push(`${selectedVendors.length} Vendor(s)`);
+          if (selectedCategories.length > 0) parts.push(`${selectedCategories.length} Category(s)`);
+          summaryText.textContent = parts.join(', ') + ' selected';
+        } else {
+          summary.style.display = 'none';
+        }
+      }
+      
+      // Event listeners
+      document.getElementById('brand-btn')?.addEventListener('click', () => switchTab('brand'));
+      document.getElementById('vendor-btn')?.addEventListener('click', () => switchTab('vendor'));
+      document.getElementById('category-btn')?.addEventListener('click', () => switchTab('category'));
+      
+      // Initialize
+      switchTab('brand');
+      setupSearch();
+      updateSelectedSummary();
     },
     preConfirm: () => {
-       if (  selectedBrands.length === 0 &&  selectedVendors.length === 0 &&  selectedCategories.length === 0  ) {
-              Swal.showValidationMessage('Please select at least one option from Brand, Vendor, or Category.');
-              return false; // Prevent confirmation until a selection is made
-            }
+      if (selectedBrands.length === 0 && selectedVendors.length === 0 && selectedCategories.length === 0) {
+        Swal.showValidationMessage('Please select at least one option from Brand, Vendor, or Category.');
+        return false;
+      }
       return {
         selectedBrands,
         selectedVendors,
@@ -814,11 +1346,13 @@ const handleFilterClick = () => {
       setSelectedVendors([...selectedVendors]);
       setSelectedCategories([...selectedCategories]);
       fetchProducts();
-      setOpenSnackbar(true); 
+      setOpenSnackbar(true);
     }
   });
 };
-
+// ...existing code...
+// ...existing code...
+// ...existing code...
 const switchTab = (type) => {
   document.querySelectorAll('.filter-tab').forEach(button => {
     button.style.background = '#6c757d';
@@ -969,17 +1503,19 @@ const exportrenderCategories = (category) => {
   return `
     <div key="${category.id}" class="category" 
          style="margin-left: ${children.length > 0 ? '20px' : '54px'}; margin-bottom: 5px;">
-      <div>
+      <div class="filter-item" style="padding: 4px 6px; border-radius: 4px; transition: all 0.2s ease; border: 1px solid transparent; cursor: pointer;">
         ${children.length > 0 ? `
           <button class="toggle-expand" data-id="${category.id}" 
                   style="margin-right: 5px; margin-bottom: 2px; cursor: pointer;">
             ${exportexpandedCategories[category.id] ? '−' : '+'}
           </button>` : ''}
-        <input type="checkbox" value="${category.config_id}" 
-               ${selectedCategories.includes(category.config_id) ? 'checked' : ''} 
-               style="margin-right: 5px; width: 4%;" 
-               class="toggle-select-category" data-id="${category.config_id}">
-        <span>${category.name}</span>
+        <label style="display: flex; align-items: center; cursor: pointer; font-weight: 500; color: #333; margin: 0; font-size: 12px;">
+          <input type="checkbox" value="${category.config_id}" 
+                 ${selectedexportCategories.includes(category.config_id) ? 'checked' : ''} 
+                 style="margin-right: 6px; width: 12px; height: 12px; accent-color: #333; cursor: pointer;" 
+                 class="toggle-select-category filter-checkbox" data-id="${category.config_id}">
+          <span>${category.name}</span>
+        </label>
       </div>
       ${exportexpandedCategories[category.id] ? children.map(exportrenderCategories).join('') : ''}
     </div>
@@ -991,22 +1527,83 @@ const renderCategories = (category) => {
   return `
     <div key="${category.id}" class="category" 
          style="margin-left: ${children.length > 0 ? '20px' : '54px'}; margin-bottom: 5px;">
-      <div>
+      <div class="filter-item" style="padding: 4px 6px; border-radius: 4px; transition: all 0.2s ease; border: 1px solid transparent; cursor: pointer;">
         ${children.length > 0 ? `
           <button class="toggle-expand" data-id="${category.id}" 
                   style="margin-right: 5px; margin-bottom: 2px; cursor: pointer;">
             ${expandedCategories[category.id] ? '−' : '+'}
           </button>` : ''}
-        <input type="checkbox" value="${category.config_id}" 
-               ${selectedCategories.includes(category.config_id) ? 'checked' : ''} 
-               style="margin-right: 5px; width: 4%;" 
-               class="toggle-select-category" data-id="${category.config_id}">
-        <span>${category.name}</span>
+        <label style="display: flex; align-items: center; cursor: pointer; font-weight: 500; color: #333; margin: 0; font-size: 12px;">
+          <input type="checkbox" value="${category.config_id}" 
+                 ${selectedCategories.includes(category.config_id) ? 'checked' : ''} 
+                 style="margin-right: 6px; width: 12px; height: 12px; accent-color: #333; cursor: pointer;" 
+                 class="toggle-select-category filter-checkbox" data-id="${category.config_id}">
+          <span>${category.name}</span>
+        </label>
       </div>
       ${expandedCategories[category.id] ? children.map(renderCategories).join('') : ''}
     </div>
   `;
 };
+
+// Add function to toggle left filter panel
+const toggleLeftFilters = () => {
+  setShowLeftFilters(!showLeftFilters);
+};
+
+const renderCategoryTree = (categories, level = 0) => {
+  return categories.map(category => {
+    const hasChildren = category.children && category.children.length > 0;
+    const isExpanded = expandedCategories[category.id];
+
+        return (
+      <div key={category.id}>
+        <CategoryTreeItem level={level}>
+          <FilterItem>
+            {hasChildren && (
+              <button 
+                className="category-toggle"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpandedCategories(prev => ({
+                    ...prev,
+                    [category.id]: !prev[category.id]
+                  }));
+                }}
+              >
+                {isExpanded ? '−' : '+'}
+              </button>
+            )}
+            <input
+              type="checkbox"
+              id={`left-category-${category.config_id}`}
+              checked={leftFilterCategories.includes(category.config_id)}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setLeftFilterCategories(prev => [...prev, category.config_id]);
+                } else {
+                  setLeftFilterCategories(prev => prev.filter(id => id !== category.config_id));
+                }
+              }}
+            />
+            <label htmlFor={`left-category-${category.config_id}`}>
+              <span>{category.name}</span>
+              {category.product_count && (
+                <span style={{ color: '#9ca3af', fontSize: '12px' }}>
+                  ({category.product_count})
+                </span>
+              )}
+            </label>
+          </FilterItem>
+        </CategoryTreeItem>
+        {hasChildren && isExpanded && renderCategoryTree(category.children, level + 1)}
+      </div>
+    );
+  });
+};
+
+    
+   
 
 const exportattachCategoryEvents = () => {
   document.querySelectorAll('.toggle-expand').forEach((button) => {
@@ -1040,7 +1637,7 @@ const attachCategoryEvents = () => {
 };
 
 // Initialize expanded state for categories
-let expandedCategories = {};
+// let expandedCategories = {};
 let exportexpandedCategories = {};
 
 const handleFiltersClear = async () => {  
@@ -1060,55 +1657,163 @@ const handleFiltersClear = async () => {
   });
  }
   return (
-    <div>
-          {loader && (
-        <div className="loader-overlay">
-          <div className="spinner"></div> {/* Custom spinner */}
+  <div>
+        {loader && (
+      <div className="loader-overlay">
+        <div className="spinner"></div> {/* Custom spinner */}
+      </div>
+    )}
+
+
+    {/* Filter Overlay - Click to close */}
+    <FilterOverlay onClick={toggleLeftFilters} />
+    
+    {/* Left Filter Panel */}
+    <LeftFilterPanel>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}> {/* Reduced margin */}
+        <h2 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#374151' }}> {/* Reduced font size */}
+          Filters
+        </h2>
+        <button
+          onClick={toggleLeftFilters}
+          style={{
+            background: 'none',
+            border: 'none',
+            fontSize: '18px', // Reduced from 24px
+            cursor: 'pointer',
+            color: '#6b7280',
+            padding: '0',
+            width: '18px', // Reduced from 24px
+            height: '18px', // Reduced from 24px
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          ×
+        </button>
+      </div>
+
+
+           {/* Category Filter Section */}
+       <FilterSection>
+        <h3>Categories</h3>
+        <div style={{ maxHeight: '200px', overflowY: 'auto' }}> {/* Reduced from 300px */}
+          {renderCategoryTree(categories)}
         </div>
-      )}
-    <div className="product-list-container" style={{marginTop: '-17px'}}>
+      </FilterSection>
+
+     {/* Brand Filter Section */}
+      <FilterSection>
+        <h3>Brands</h3>
+        <div style={{ maxHeight: '180px', overflowY: 'auto' }}> {/* Reduced from 250px */}
+          {brands.map(brand => (
+            <FilterItem key={brand.id}>
+              <input
+                type="checkbox"
+                id={`left-brand-${brand.id}`}
+                checked={leftFilterBrands.includes(brand.id)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setLeftFilterBrands(prev => [...prev, brand.id]);
+                  } else {
+                    setLeftFilterBrands(prev => prev.filter(id => id !== brand.id));
+                  }
+                }}
+              />
+              <label htmlFor={`left-brand-${brand.id}`}>
+                <span>{brand.name}</span>
+                {brand.product_count && (
+                  <span style={{ color: '#9ca3af', fontSize: '10px' }}> {/* Reduced from 12px */}
+                    ({brand.product_count})
+                  </span>
+                )}
+              </label>
+            </FilterItem>
+          ))}
+        </div>
+      </FilterSection>
+
+
+            {/* Clear Filters Button */}
+        <button
+        onClick={() => {
+          setLeftFilterBrands([]);
+          setLeftFilterCategories([]);
+          setSelectedBrands([]);
+          setSelectedCategories([]);
+          fetchProducts("", searchQuery, 1);
+        }}
+        style={{
+          width: '100%',
+          padding: '8px', // Reduced from 12px
+          backgroundColor: '#f3f4f6',
+          border: '1px solid #d1d5db',
+          borderRadius: '4px', // Reduced from 6px
+          color: '#374151',
+          cursor: 'pointer',
+          fontSize: '12px', // Reduced from 14px
+          fontWeight: 500,
+          marginTop: '12px', // Reduced from 20px
+          transition: 'background-color 0.2s ease',
+        }}
+        onMouseOver={(e) => e.target.style.backgroundColor = '#e5e7eb'}
+        onMouseOut={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+      >
+        Clear All Filters
+      </button>
+    </LeftFilterPanel>
+
+
+
+    {/* Main Content Container - Adjusted for left panel */}
+    <div className="product-list-container" style={{
+      marginTop: '-17px', 
+      backgroundColor: 'white',
+      marginLeft: showLeftFilters ? '460px' : '240px', // 240px (sidebar) + 220px (filter panel) when open, just 240px when closed
+      transition: 'margin-left 0.3s ease-in-out'
+    }}>
+
       <div className="product_table_header">
         <div>
-        <h1 className="products_header" style={{fontSize:'21px', margin: '24px 0px 22px 0px' }}>Products</h1>
-    {/* <span style={{ fontSize: '16px', color: '#666' }}>
-    <span className="total-brands-text">Total Products:</span><span className="brand-count">{productCount}</span>
-    </span> */}
-  </div>
+          <h1 className="products_header" style={{fontSize:'21px', margin: '24px 0px 22px 0px' }}>Products</h1>
+        </div>
         <div className="addbrandcontainer" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-          {/* Search Icon Container */}
-      
-          {/* {searchOpen && ( */}
-            <div  className="search-input-container-brand search-icon-product"   style={{marginTop: '26px', paddingRight:'5px',    margin: '28px 0px 27px 0px' }}>
-
+          
+          {/* Search Input */}
+          <div className="search-input-container-brand search-icon-product" style={{marginTop: '26px', paddingRight:'5px', margin: '28px 0px 27px 0px' }}>
             <input
-                type="text"
-                autoComplete="off"
-                placeholder="Search Products"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                style={{
-                  width:'50px',
-                  paddingRight: '30px',  // Give space on the right side for the icon
-                  width: '100%',         // Make input field full width
-                }}
-                
-              />
-              {searchQuery.length > 0 && (
-               <CloseIcon
+              type="text"
+              autoComplete="off"
+              placeholder="Search Products"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              style={{
+                width:'50px',
+                paddingRight: '30px',
+                width: '100%',
+              }}
+            />
+            {searchQuery.length > 0 && (
+              <CloseIcon
                 onClick={handleSearchClear}
                 style={{ cursor: 'pointer',color:'grey',fontSize:'21px' }}
-              /> )}
-               {searchQuery.length === 0 && (
+              /> 
+            )}
+            {searchQuery.length === 0 && (
               <SearchIcon 
                 style={{
                   position: 'absolute',
-                  right: '10px',         // Position the icon on the right side
+                  right: '10px',
                   top: '50%',
-                  transform: 'translateY(-50%)',  // Center vertically
-                  cursor: 'pointer',    // Show pointer cursor
-                  color: '#888'          // Icon color (optional)
+                  transform: 'translateY(-50%)',
+                  cursor: 'pointer',
+                  color: '#888'
                 }}
-              /> )}
+              /> 
+            )}
+
+
               {/* <input
                 type="text"
                 autoComplete="off"
@@ -1121,85 +1826,87 @@ const handleFiltersClear = async () => {
                 style={{ cursor: 'pointer' }}
               /> */}
             </div>
+
+
+
+            
           {/* )} */}
-           {sortOption && (
-          <div className="sort-dropdown-container" style={{ margin: '0px 0px 28px 0px' ,     marginTop: '30px'    }}>
-       <select
-  onChange={handleSortChange}
-  value={sortOption}
-  className="sort-dropdown select-back"
-  style={{
-    cursor: "pointer",
-    padding: "5px 10px",
-    fontSize: "16px",
-  }}>
-  {/* <option value="" style={{ color: "gray" }}>Sort by Products</option> */}
-  <option value="newest">New to Old</option>
-  <option value="oldest">Old to New</option>
-</select>
-
-      </div>
+             {/* Sort Dropdown */}
+          {sortOption && (
+            <div className="sort-dropdown-container" style={{ margin: '0px 0px 28px 0px', marginTop: '30px' }}>
+              <select
+                onChange={handleSortChange}
+                value={sortOption}
+                className="sort-dropdown select-back"
+                style={{
+                  cursor: "pointer",
+                  padding: "5px 10px",
+                  fontSize: "16px",
+                }}>
+                <option value="newest">New to Old</option>
+                <option value="oldest">Old to New</option>
+              </select>
+            </div>
           )}
-          {/* <div className="search-icon-container" onClick={toggleSearchField} style={{ margin: '6px 10px 30px 10px' }}>
-            <SearchIcon style={{ cursor: 'pointer', fontSize: '33px' }} />
-            <span className="search-hover-text" style={{width:'40px'}}>Search</span>
 
-          </div> */}
-         
-          <div className="search-icon-container" onClick={toggleFilterField} style={{  margin: '42px 10px 37px'}}>
+          {/* Left Filter Toggle Button */}
+          <div className="search-icon-container" onClick={toggleLeftFilters} style={{ margin: '41px 10px 37px' }}>
+            <FilterListIcon style={{ 
+              cursor: 'pointer', 
+              fontSize: '33px', 
+              color: showLeftFilters ? '#a52be4' : '#666' 
+            }} />
+            <span className="search-hover-text" style={{width:'60px'}}>Side Filters</span>
+          </div>
+
+          <div className="search-icon-container" onClick={toggleFilterField} style={{ margin: '42px 10px 37px'}}>
             <Sort style={{ cursor: 'pointer', fontSize: '33px' }} />
             <span className="search-hover-text" style={{width:'74px'}}>Sort By Order</span>
           </div>
+
           <div className="search-icon-container" onClick={handleFilterClick} style={{ margin: '41px 10px 37px' }}>
-          <FilterListIcon style={{ cursor: 'pointer', fontSize: '33px' }} />
-          <span className="search-hover-text" style={{width:'34px'}}>Filters</span>
+            <FilterListIcon style={{ cursor: 'pointer', fontSize: '33px' }} />
+            <span className="search-hover-text" style={{width:'34px'}}>Modal Filters</span>
           </div>
+
           <div className="brand-actions-container">
-          <div className="button-row">
-          <div
-            className="add-product-btn-container import-btn"
-            onClick={handleAddProductClick}
-            style={{ marginRight: '6px' }}
-          >
-            <AddOutlinedIcon style={{ cursor: 'pointer' }} className="add-product-btn" />
-               <span className="button-text" style={{width:'85px'}}>Create Product</span>
-            
+            <div className="button-row">
+              <div
+                className="add-product-btn-container import-btn"
+                onClick={handleAddProductClick}
+                style={{ marginRight: '6px' }}
+              >
+                <AddOutlinedIcon style={{ cursor: 'pointer' }} className="add-product-btn" />
+                <span className="button-text" style={{width:'85px'}}>Create Product</span>
+              </div>
+
+              <button className="import-btn" onClick={openImportModal}>
+                <DownloadIcon />
+                <span className="button-text">Import</span>
+              </button>
+
+              <button className="import-btn download-btn" onClick={handleExport} style={{ marginLeft: '6px' }}>
+                <UploadIcon />
+                <span className="button-text">Export</span>
+              </button>
+
+              {(selectedBrands.length > 0 || selectedVendors.length > 0 || selectedCategories.length > 0) && (
+                <button className="import-btn download-btn" onClick={handleFiltersClear} style={{ marginLeft: '6px' }}>
+                  <RefreshIcon />
+                  <span className="button-text">Clear</span>
+                </button>
+              )}
+
+              <div className="count-vendor" style={{ marginTop: '5px', display: 'flex', alignItems: 'center' }}>
+                <span className="total-brands-text" style={{ marginRight: '5px' }}>Total Products:</span>
+                <span className="brand-count">{productCount}</span>
+              </div>
+            </div>
           </div>
-
-          {/* Import Button */}
-          <button className="import-btn" onClick={openImportModal}>
-            <DownloadIcon />
-            <span className="button-text">Import</span>
-          </button>
-
-          {/* Export Button */}
-          <button className="import-btn download-btn" onClick={handleExport} style={{ marginLeft: '6px' }}>
-            <UploadIcon />
-            <span className="button-text">Export</span>
-          </button>
-
-          {/* {(selectedBrands.length > 0 || selectedVendors.length > 0 || selectedCategories.length > 0) && (
-      <button onClick={handleFiltersClear} >
-        Clear all
-      </button>
-      )} */}
-
-          {(selectedBrands.length > 0 || selectedVendors.length > 0 || selectedCategories.length > 0) && (
-
-<button className="import-btn download-btn" onClick={handleFiltersClear} style={{ marginLeft: '6px' }}>
-<RefreshIcon />
-<span className="button-text">Clear</span>
-</button>
-// </Tooltip>
-      )}
-          <div className="count-vendor" style={{ marginTop: '5px', display: 'flex', alignItems: 'center' }}>
-      <span className="total-brands-text" style={{ marginRight: '5px' }}>Total Products:</span>
-      <span className="brand-count">{productCount}</span>
-    </div>
-          </div>
-</div>
         </div>
       </div>
+
+     
 <>
       {/* <TableContainer component={Paper}>
         <Table>
@@ -1271,7 +1978,13 @@ const handleFiltersClear = async () => {
           </TableBody>
         </Table>
       </TableContainer> */}
-<TableContainer component={Paper} sx={{ maxHeight: '400px', overflow: 'auto',  overflowY: "overlay",
+
+{/* <TableContainer 
+  component={Paper} 
+  sx={{ 
+    maxHeight: '400px', 
+    overflow: 'auto',
+    overflowY: "overlay",
     overflowX: "overlay",
     "&::-webkit-scrollbar": {
       height: "2px",
@@ -1287,92 +2000,435 @@ const handleFiltersClear = async () => {
     "&::-webkit-scrollbar-track": {
       backgroundColor: "#f1f1f1",
       borderRadius: "10px",
-    }, }}>
+    },
+  }}
+>
   <Table>
     <TableHead sx={{ position: 'sticky', top: -1, zIndex: 1 }}>
       <TableRow className="productlistheader">
-        <TableCell sx={{ textAlign: "center", padding: "5px" }}>Image</TableCell>
-        <TableCell sx={{ textAlign: "center", padding: "5px" }}>SKU</TableCell>
-        <TableCell sx={{ textAlign: "center", padding: "5px" }}> Name</TableCell>
-        <TableCell sx={{ textAlign: "center", padding: "5px" }}>Brand</TableCell>
-        <TableCell sx={{ textAlign: "center", padding: "5px" }}>Vendor</TableCell>
-        <TableCell sx={{ textAlign: "center", padding: "5px" }}>Completeness</TableCell>
-        <TableCell sx={{ textAlign: "center", padding: "5px"}}>Actions</TableCell>
+        <TableCell sx={{ textAlign: "center", padding: "8px", minWidth: '80px' }}>
+          Image
+        </TableCell>
+        <TableCell sx={{ textAlign: "center", padding: "8px", minWidth: '120px' }}>
+          SKU
+        </TableCell>
+        <TableCell sx={{ textAlign: "left", padding: "8px 16px", minWidth: '200px' }}>
+          Name
+        </TableCell>
+        <TableCell sx={{ textAlign: "center", padding: "8px", minWidth: '140px' }}>
+          Brand
+        </TableCell>
+        <TableCell sx={{ textAlign: "center", padding: "8px", minWidth: '100px' }}>
+          Price
+        </TableCell>
+        <TableCell sx={{ textAlign: "center", padding: "8px", minWidth: '160px' }}>
+          End Level Category
+        </TableCell>
+        <TableCell sx={{ textAlign: "center", padding: "8px", minWidth: '140px' }}>
+          Vendor
+        </TableCell>
+        <TableCell sx={{ textAlign: "center", padding: "8px", minWidth: '140px' }}>
+          Completeness
+        </TableCell>
+        <TableCell sx={{ textAlign: "center", padding: "8px", minWidth: '100px' }}>
+          Actions
+        </TableCell>
       </TableRow>
     </TableHead>
-    <TableBody>
-      {currentProducts.length === 0 ? (
-        <TableRow>
-          {loader && (
-                   <TableCell colSpan={7} align="center" sx={{ fontSize: "14px", color: "#888" }}>
-                   Loading Products
-                 </TableCell>
-                  )}
-                    {!loader && (
-                       <TableCell colSpan={7} align="center" sx={{ fontSize: "14px", color: "#888" }}>
-                       No Products Found
-                     </TableCell>
-                    )}
-         
-        </TableRow>
-      ) : (
-        currentProducts.map((product) => (
-          <TableRow
-            key={product.id}
-            sx={{ "&:hover": { backgroundColor: "#6fb6fc38" } }}
-            onClick={() => handleProductDetailClick(product.id)}
+<TableBody>
+  {processedProducts.length === 0 ? (
+    <TableRow>
+      <TableCell 
+        colSpan={9} 
+        align="center" 
+        sx={{ 
+          fontSize: "14px", 
+          color: "#888",
+          padding: "40px 20px"
+        }}
+      >
+        {loader ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+            <CircularProgress size={20} />
+            <span>Loading Products...</span>
+          </div>
+        ) : (
+          "No Products Found"
+        )}
+      </TableCell>
+    </TableRow>
+  ) : (
+    processedProducts.map((product) => (
+      <TableRow
+        key={product.id}
+        sx={{ 
+          "&:hover": { 
+            backgroundColor: "#6fb6fc38",
+            cursor: 'pointer'
+          }
+        }}
+        onClick={() => handleProductDetailClick(product.id)}
+      >
+        <TableCell sx={{ textAlign: "center", padding: "8px" }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center' 
+          }}>
+            <img
+              src={product.image_list && product.image_list[0] 
+                ? product.image_list[0].url 
+                : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOBl1B_Kz4RdrOR6_WgaITKDcS10PGoL7jVA&s"
+              }
+              alt={product.name}
+              style={{ 
+                width: '40px', 
+                height: '40px', 
+                borderRadius: "50%", 
+                objectFit: "cover",
+                verticalAlign: 'middle'
+              }}
+            />
+          </div>
+        </TableCell>
+        
+        <TableCell sx={{ textAlign: "center", fontSize: '14px', padding: "8px" }}>
+          {product.sku || "N/A"}
+        </TableCell>
+        
+        <TableCell sx={{ textAlign: "left", padding: "8px 16px" }}>
+          <Link 
+            to={`/manufacturer/products/details/${product.id}`} 
+            style={{ 
+              fontSize: '14px', 
+              textDecoration: "none", 
+              color: "inherit"
+            }}
           >
-            <TableCell sx={{ textAlign: "center",padding: "5px" }}>
-              <img
-                src={product.image_list && product.image_list[0] ? product.image_list[0].url : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOBl1B_Kz4RdrOR6_WgaITKDcS10PGoL7jVA&s"}
-                alt={product.name}
-                style={{ width: '30px', height: '30px', borderRadius: "50%", objectFit: "cover", verticalAlign:'middle' }}
-              />
-            </TableCell>
-            <TableCell sx={{ textAlign: "center", fontSize:'14px', padding: "5px" }}>
-              {product.sku || "N/A"}
-            </TableCell>
-            <TableCell sx={{ textAlign: "center", padding: "5px" }}>
-              <Link to={`/manufacturer/products/details/${product.id}`} style={{ fontSize:'14px', textDecoration: "none", color: "inherit" }}>
-                {product.name}
-              </Link>
-            </TableCell>
-            <TableCell sx={{ textAlign: "center",fontSize:'14px', padding: "5px" }}>
-              {product.brand_name || "N/A"}
-            </TableCell>
-            <TableCell sx={{ textAlign: "center",fontSize:'14px', padding: "5px" }}>
-              {product.vendor_name || "N/A"}
-            </TableCell>
-            <TableCell sx={{ textAlign: "center", fontSize: '14px', padding: "5px" }}>
-            <div style={{ width: '100%', backgroundColor: '#e0e0e0', borderRadius: '5px', overflow: 'hidden' }}>
+            {product.name}
+          </Link>
+        </TableCell>
+        
+        <TableCell sx={{ textAlign: "center", fontSize: '14px', padding: "8px" }}>
+          {product.brand_name || "N/A"}
+        </TableCell>
+        
+        <TableCell sx={{ textAlign: "center", fontSize: '14px', padding: "8px" }}>
+          {product.formattedPrice}
+        </TableCell>
+        
+        <TableCell sx={{ 
+          textAlign: "center", 
+          fontSize: '14px', 
+          padding: "8px",
+          maxWidth: "160px",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap"
+        }}>
+          <span title={product.endLevelCategories}>
+            {product.endLevelCategories}
+          </span>
+        </TableCell>
+        
+        <TableCell sx={{ textAlign: "center", fontSize: '14px', padding: "8px" }}>
+          {product.vendor_name || "N/A"}
+        </TableCell>
+        
+        <TableCell sx={{ textAlign: "center", fontSize: '14px', padding: "8px" }}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            gap: '4px' 
+          }}>
+            <div style={{ 
+              width: '100%', 
+              maxWidth: '80px',
+              backgroundColor: '#e0e0e0', 
+              borderRadius: '5px', 
+              overflow: 'hidden',
+              height: '10px'
+            }}>
               <div
                 style={{
                   width: `${product.completeness_percentage || 0}%`,
                   backgroundColor: product.completeness_percentage >= 75 ? 'green' : product.completeness_percentage >= 50 ? 'orange' : 'red',
-                  height: '10px',
+                  height: '100%',
+                  borderRadius: '5px',
+                  transition: 'width 0.3s ease'
                 }}
               />
             </div>
-            <span>{product.completeness_percentage || 0}%</span>
-          </TableCell>
-            <TableCell sx={{ textAlign: "center",fontSize:'14px', padding: "5px" }}>
+            <span style={{ fontSize: '12px' }}>
+              {product.completeness_percentage || 0}%
+            </span>
+          </div>
+        </TableCell>
+        
+        <TableCell sx={{ textAlign: "center", fontSize: '14px', padding: "8px" }}>
+          <button
+            className="action-btn edit-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleProductDetailClick(product.id);
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto'
+            }}
+          >
+            <EditIcon />
+          </button>
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
+  </Table>
+</TableContainer> */}
+<StyledTableContainer>
+  <Table stickyHeader>
+    <StyledTableHead>
+      <TableRow>
+        <StyledTableCell sx={{ width: '8%' }}>
+          Image
+        </StyledTableCell>
+        
+        <StyledTableCell sx={{ width: '25%' }}>
+          Product Name
+        </StyledTableCell>
+        
+        <StyledTableCell sx={{ width: '12%' }}>
+          SKU
+        </StyledTableCell>
+        
+        <StyledTableCell sx={{ width: '12%' }}>
+          Brand
+        </StyledTableCell>
+        
+        <StyledTableCell sx={{ width: '10%' }}>
+          Price
+        </StyledTableCell>
+        
+        <StyledTableCell sx={{ width: '15%' }}>
+          End Level Category
+        </StyledTableCell>
+        
+        <StyledTableCell sx={{ width: '10%' }}>
+          Vendor
+        </StyledTableCell>
+        
+        <StyledTableCell sx={{ width: '13%' }}>
+          Completeness
+        </StyledTableCell>
+        
+        <StyledTableCell sx={{ width: '8%' }}>
+          Actions
+        </StyledTableCell>
+      </TableRow>
+    </StyledTableHead>
+    
+    <TableBody>
+      {processedProducts.length === 0 ? (
+        <StyledTableRow>
+          <StyledTableCell colSpan={9} align="center" sx={{ py: 8 }}>
+            {loader ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                <CircularProgress size={24} sx={{ color: '#a52be4' }} />
+                <span style={{ color: '#6b7280', fontSize: '14px' }}>Loading Products...</span>
+              </div>
+            ) : (
+              <div style={{ color: '#9ca3af', fontSize: '14px' }}>
+                No Products Found
+              </div>
+            )}
+          </StyledTableCell>
+        </StyledTableRow>
+      ) : (
+        processedProducts.map((product, index) => (
+          <StyledTableRow
+            key={product.id}
+            onClick={() => handleProductDetailClick(product.id)}
+          >
+            {/* Product Image */}
+            <StyledTableCell>
+              <div style={{
+                width: '30px',
+                height: '30px',
+                borderRadius: '6px',
+                overflow: 'hidden',
+                backgroundColor: '#f3f4f6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto'
+              }}>
+                <img
+                  src={product.image_list?.[0]?.url || "https://via.placeholder.com/30x30?text=No+Image"}
+                  alt={product.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                />
+              </div>
+            </StyledTableCell>
+            
+            {/* Product Name */}
+            <StyledTableCell>
+              <div style={{ 
+                fontWeight: 500, 
+                color: '#111827',
+                fontSize: '13px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }} title={product.name}>
+                {product.name}
+              </div>
+            </StyledTableCell>
+            
+            {/* SKU */}
+            <StyledTableCell>
+              <span style={{
+                backgroundColor: '#f3f4f6',
+                color: '#374151',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontFamily: 'monospace',
+                display: 'inline-block',
+                maxWidth: '100%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }} title={product.sku || "N/A"}>
+                {product.sku || "N/A"}
+              </span>
+            </StyledTableCell>
+            
+            {/* Brand */}
+            <StyledTableCell>
+              <div style={{ 
+                fontWeight: 500, 
+                color: '#374151',
+                fontSize: '13px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }} title={product.brand_name || "N/A"}>
+                {product.brand_name || "N/A"}
+              </div>
+            </StyledTableCell>
+            
+            {/* Price */}
+            <StyledTableCell>
+              <span style={{
+                fontWeight: 600,
+                color: '#374151',
+                fontSize: '13px'
+              }}>
+                {product.formattedPrice}
+              </span>
+            </StyledTableCell>
+            
+            {/* End Level Category */}
+            <StyledTableCell>
+              <span style={{
+                display: 'block',
+                color: '#6b7280',
+                fontSize: '12px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }} title={product.endLevelCategories}>
+                {product.endLevelCategories}
+              </span>
+            </StyledTableCell>
+            
+            {/* Vendor */}
+            <StyledTableCell>
+              <div style={{ 
+                fontWeight: 500, 
+                color: '#374151',
+                fontSize: '13px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }} title={product.vendor_name || "N/A"}>
+                {product.vendor_name || "N/A"}
+              </div>
+            </StyledTableCell>
+            
+            {/* Completeness */}
+            <StyledTableCell>
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                gap: '3px'
+              }}>
+                <div style={{ 
+                  width: '100%', 
+                  maxWidth: '50px',
+                  backgroundColor: '#e0e0e0', 
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  height: '6px'
+                }}>
+                  <div
+                    style={{
+                      width: `${product.completeness_percentage || 0}%`,
+                      backgroundColor: product.completeness_percentage >= 75 ? '#a52be4' : product.completeness_percentage >= 50 ? 'orange' : 'red',
+                      height: '100%',
+                      borderRadius: '4px',
+                      transition: 'width 0.3s ease'
+                    }}
+                  />
+                </div>
+                <span style={{ fontSize: '10px' }}>
+                  {product.completeness_percentage || 0}%
+                </span>
+              </div>
+            </StyledTableCell>
+            
+            {/* Actions */}
+            <StyledTableCell>
               <button
                 className="action-btn edit-btn"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleProductDetailClick(product.id);
                 }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto',
+                  padding: '4px 6px',
+                  border: 'none',
+                  borderRadius: '3px',
+                  backgroundColor: '#a52be4',
+                  color: 'white',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s ease'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#8e44ad'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#a52be4'}
               >
-                <EditIcon />
+                <EditIcon fontSize="small" />
               </button>
-            </TableCell>
-          </TableRow>
+            </StyledTableCell>
+          </StyledTableRow>
         ))
       )}
     </TableBody>
   </Table>
-</TableContainer>
-
+</StyledTableContainer>
       <div className="pagination-container">
             {totalPages > 1 && pageFromUrl > 1 && (
               <button className="pagination-button prev-button" onClick={() => handlePageChange(pageFromUrl - 1)}>
